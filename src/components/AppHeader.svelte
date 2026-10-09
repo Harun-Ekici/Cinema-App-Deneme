@@ -4,7 +4,7 @@
 </script>
 
 <header class="ust">
-  <a href="/" class="logo">passo<span>klon</span></a>
+  <a href="/" class="logo" aria-label="CineQ ana sayfa"><img src="/cineq-logo.svg" alt="" width="28" height="28" />cine<span>Q</span></a>
   <button
     class="tema-dugme"
     onclick={() => tema.degistir()}
@@ -27,11 +27,17 @@
   }
 
   .logo {
+    display: flex;
+    align-items: center;
     color: #fff;
     font-size: 22px;
     font-weight: 800;
     letter-spacing: -0.5px;
     text-decoration: none;
+  }
+
+  .logo img {
+    margin-inline-end: 8px;
   }
 
   .logo span {

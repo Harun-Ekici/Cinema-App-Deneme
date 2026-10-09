@@ -47,3 +47,13 @@ Aşağıdaki renk token'ları `src/styles/app.css` içerisindeki `:root` ve `:ro
 | iOS | `src-tauri/icons/ios/` | AppIcon seti (20–1024 px) | `bun run tauri icon` |
 | Android | `src-tauri/icons/android/` | Mipmap setleri (mdpi–xxxhdpi) | `bun run tauri icon` |
 | Web | `public/favicon.png`, `public/apple-touch-icon.png` | 180 px & 32 px PNG | Elle / Statik dizin |
+
+## Logo ve ikon dosyaları
+
+| Dosya | Kullanım |
+|---|---|
+| `public/cineq-logo.svg` | Ana logo: lacivert zemin (`--renk-koyu`), kırmızı Q halkası (`--renk-ana`), beyaz oynat üçgeni. Üst barda ve tarayıcı simgesinde kullanılır |
+| `public/favicon.png`, `public/apple-touch-icon.png` | Logodan üretilen 128 px ve 180 px simgeler |
+| `src-tauri/icons/` | `bun run tauri icon` ile logodan üretilen macOS, Windows, Linux, iOS ve Android ikon setleri |
+
+Logo değişirse 1024 px PNG'si üretilip `bun run tauri icon <dosya>` yeniden çalıştırılır.

@@ -22,6 +22,7 @@ Vizyondaki filmleri listeleyen, salon koltuk seçimi ve büfe siparişi sağlaya
 - **Ders:** MYO063 - Mobil Uygulama Geliştirme
 - **Eğitmen:** [Keyvan Arasteh](https://github.com/keyvanarasteh)
 - **Öğrenci:** Harun Ekici
+- **Öğrenci No:** 2520171003 / 2620511144
 - **Program:** Bilgisayar Teknolojisi
 - **Proje Fikri Detayı:** [docs/proje-fikri.md](docs/proje-fikri.md)
 

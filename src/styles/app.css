@@ -1,29 +1,24 @@
-/* Adım 2: Global stil — tüm sayfaların ortak renkleri ve yardımcı sınıfları */
 :root {
-  --renk-ana: #e4002b;
-  --renk-koyu: #1a1a2e;
-  --zemin: #f4f5f7;
+  --renk-ana: #e11d48;
+  --renk-vurgu: #d97706;
+  --renk-koyu: #0f172a;
+  --zemin: #f8fafc;
   --kart: #ffffff;
-  --yazi: #1a1a2e;
-  --yazi-soluk: #6b7280;
-  --kenar: #e5e7eb;
+  --yazi: #0f172a;
+  --yazi-soluk: #64748b;
+  --kenar: #e2e8f0;
   --radius: 14px;
-  color-scheme: light;
-
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: var(--yazi);
-  background: var(--zemin);
-  -webkit-text-size-adjust: 100%;
 }
 
-/* Adım 15: Gece modu — <html data-tema="gece"> olunca değişkenler koyulaşır */
 :root[data-tema="gece"] {
-  --zemin: #0f1117;
-  --kart: #1a1d26;
-  --yazi: #f3f4f6;
-  --yazi-soluk: #9ca3af;
-  --kenar: #2a2e3a;
-  color-scheme: dark;
+  --renk-ana: #f43f5e;
+  --renk-vurgu: #f59e0b;
+  --renk-koyu: #020617;
+  --zemin: #0b0f19;
+  --kart: #151c2e;
+  --yazi: #f8fafc;
+  --yazi-soluk: #94a3b8;
+  --kenar: #1e293b;
 }
 
 * {

@@ -85,3 +85,16 @@ Ekran Kırılımları ve Düzen Kuralları:
 └── Geniş Ekran (1440px+)
     ├── Düzen: 4 sütunlu ızgara düzeni, ortalanmış max-width: 1400px
     └── Gezinme: Genişletilmiş seans ve koltuk matrisi, konforlu boşluklar
+
+## Dil rotaları
+
+Dört bilgi sayfası (`hakkinda`, `iletisim`, `kosullar`, `gizlilik`) dört dilde yayınlanır. Türkçe kök rotadadır; diğer diller dil önekiyle açılır ve `<html>` etiketi dile göre `lang` ve `dir` alır.
+
+| Dil | Önek | Örnek | Yön |
+|---|---|---|---|
+| Türkçe | yok | `/hakkinda` | `ltr` |
+| English | `/en` | `/en/hakkinda` | `ltr` |
+| العربية | `/ar` | `/ar/hakkinda` | `rtl` |
+| فارسی | `/fa` | `/fa/hakkinda` | `rtl` |
+
+Sayfalar arası dil geçişi `src/components/DilSecici.astro` ile yapılır. Yeni bir bilgi sayfası dört dil rotasıyla birlikte eklenir.

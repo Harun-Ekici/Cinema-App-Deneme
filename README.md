@@ -32,6 +32,8 @@ Vizyondaki filmleri listeleyen, salon koltuk seçimi ve büfe siparişi sağlaya
 Projeyi çalıştırmak için:
 
 ```bash
+git clone https://github.com/Harun-Ekici/Cinema-App-Deneme.git
+cd Cinema-App-Deneme
 # Bağımlılıkları yükleyin
 bun install
 

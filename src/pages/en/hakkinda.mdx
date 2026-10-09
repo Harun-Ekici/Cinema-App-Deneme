@@ -1,0 +1,43 @@
+---
+layout: ../../layouts/Layout.astro
+title: About — CineQ
+---
+import DilSecici from '../../components/DilSecici.astro';
+import CanliRozet from '../../components/react/CanliRozet';
+
+<div class="sayfa">
+
+<div class="kart" style="padding: 24px;">
+
+<DilSecici sayfa="hakkinda" />
+
+# About CineQ
+
+**CineQ** is a next-generation desktop and mobile reservation app built with modern technologies to remove the queues at cinema ticket desks and snack bars.
+
+<CanliRozet client:load etiket="Tauri v2 + Astro + Svelte 5" />
+
+## Developer
+
+- **Developer:** Harun Ekici
+- **Programme:** Computer Technology
+- **University:** Istinye University
+- **Course:** MYO063 Mobile Programming
+
+## Architecture and technologies
+
+- **Tauri v2 (Rust):** a secure, native and lightweight desktop runtime.
+- **Astro:** an optimized static site generator with multi-framework support.
+- **Svelte 5 Runes:** reactive interface and state management (`$state`, `$derived`).
+- **React support:** direct use of the rich component ecosystem inside MDX.
+
+## App pages
+
+- **Discover (`/`):** films now showing, halls and showtime selection
+- **Snack bar and cart (`/sepet`):** popcorn and drink orders, ticket total
+- **My tickets (`/biletlerim`):** purchased tickets and verification codes
+- **Profile (`/profil`):** user preferences, theme switch and information pages
+
+</div>
+
+</div>

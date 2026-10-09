@@ -10,10 +10,15 @@ interface Props {
 
 const { title = "PassoKlon" } = Astro.props;
 const currentPath = Astro.url.pathname;
+
+// Dil rotası: /en, /ar, /fa altındaki sayfalar kendi dilinde ve yönünde açılır
+const dilBolumu = Astro.url.pathname.split('/')[1];
+const dil = ['en', 'ar', 'fa'].includes(dilBolumu) ? dilBolumu : 'tr';
+const yon = dil === 'ar' || dil === 'fa' ? 'rtl' : 'ltr';
 ---
 
 <!doctype html>
-<html lang="tr">
+<html lang={dil} dir={yon}>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/cineq-logo.svg" />

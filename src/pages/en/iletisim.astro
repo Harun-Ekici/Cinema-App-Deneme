@@ -1,17 +1,17 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import DilSecici from '../components/DilSecici.astro';
-import IletisimFormu from '../components/IletisimFormu.svelte';
+import Layout from '../../layouts/Layout.astro';
+import DilSecici from '../../components/DilSecici.astro';
+import IletisimFormu from '../../components/IletisimFormu.svelte';
 ---
 
-<Layout title="İletişim — CineQ">
+<Layout title="Contact — CineQ">
   <div class="sayfa-kapsayici">
     <div class="kart" style="padding: 24px;">
       <DilSecici sayfa="iletisim" />
-      <h1 class="baslik">İletişim</h1>
-      <p class="aciklama">Görüş, öneri veya destek talepleriniz için formu doldurabilirsiniz.</p>
+      <h1 class="baslik">Contact</h1>
+      <p class="aciklama">Fill in the form for your comments, suggestions or support requests.</p>
       <hr class="ayrac" />
-      <IletisimFormu client:load dil="tr" />
+      <IletisimFormu client:load dil="en" />
     </div>
   </div>
 </Layout>

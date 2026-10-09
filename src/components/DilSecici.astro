@@ -1,0 +1,25 @@
+---
+// Bilgi sayfalarında dil değiştirme bağlantıları. Türkçe kök rotada, diğer diller /en, /ar, /fa altında.
+interface Props { sayfa: string; }
+const { sayfa } = Astro.props;
+const diller = [
+  { kod: 'tr', ad: 'Türkçe', href: `/${sayfa}` },
+  { kod: 'en', ad: 'English', href: `/en/${sayfa}` },
+  { kod: 'ar', ad: 'العربية', href: `/ar/${sayfa}` },
+  { kod: 'fa', ad: 'فارسی', href: `/fa/${sayfa}` },
+];
+const bolum = Astro.url.pathname.split('/')[1];
+const etkin = ['en', 'ar', 'fa'].includes(bolum) ? bolum : 'tr';
+---
+<nav class="dil-secici" aria-label="Dil / Language">
+  {diller.map((d) => (
+    <a href={d.href} lang={d.kod} hreflang={d.kod} aria-current={d.kod === etkin ? 'page' : undefined} class:list={{ etkin: d.kod === etkin }}>{d.ad}</a>
+  ))}
+</nav>
+
+<style>
+  .dil-secici { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .dil-secici a { padding: 6px 12px; border: 1px solid var(--kenar); border-radius: 999px; color: inherit; text-decoration: none; font-size: 14px; }
+  .dil-secici a.etkin { background: var(--renk-ana); border-color: var(--renk-ana); color: var(--kart); font-weight: 600; }
+  .dil-secici a:focus-visible { outline: 2px solid var(--renk-ana); outline-offset: 2px; }
+</style>

@@ -11,7 +11,7 @@ Bu belge, projenin temel dizin yapısını, önemli klasörlerin sorumlulukları
 ## 📂 Temel Dizin Mimarisi
 
 ```
-hello-mobil/
+Cinema-App-Deneme/
 ├── package.json             # Bağımlılıklar, scriptler ve motor tanımları
 ├── astro.config.mjs         # Astro entegrasyonları (Svelte, React, MDX) ve Vite port ayarları
 ├── tsconfig.json            # TypeScript yapılandırması ve $lib alias'ı

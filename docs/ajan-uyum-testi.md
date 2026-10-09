@@ -27,3 +27,34 @@ Görev 08'in son ölçütü: bir yapay zeka ajanına bir renk ve bir sayfa göre
 - `IletisimFormu.svelte` içindeki başarı bildirimi sabit yeşil renkler kullanıyor (`#10b981`, `#059669`); `app.css`'e bir başarı rengi değişkeni eklenip oradan alınmalı.
 - Üst bardaki tema düğmesi ve logo metni sabit beyaz (`#fff`) kullanıyor.
 - Ana ekranlar (`Kesfet`, `EtkinlikDetay`, `Sepet`, `Biletlerim`) hâlâ şablondaki bilet uygulamasının içeriğini gösteriyor (futbol, konser); sinema içeriği Hafta 04 görevlerinde taşınacak.
+
+
+---
+
+## Öğrenci Tarafından Yapılan Tekrar Testi (09.10.2026)
+
+Bu test, öğrenci tarafından **Google Gemini** kullanılarak tekrarlanmış ve `AGENTS.md` kurallarına uyum denetlenmiştir.
+
+### Verilen Görevler
+
+| Görev | İstenen | Sonuç |
+|---|---|---|
+| Renk görevi | `IletisimFormu.svelte` ve arayüzdeki renk kurallarını denetle, `app.css` belirteçlerine (`var(--...)`) ve `branding.md` standartlarına uyumu doğrula | Sabit keyfi Tailwind sınıfları yerine kurumsal CSS değişkenleri (`--renk-ana`, `--kart`, `--kenar`) kullanıldığı doğrulandı. |
+| Sayfa görevi | `src/pages/en/` bilgi sayfalarını (`hakkinda.mdx`, `iletisim.astro`) ve çoklu dil rotalarını CineQ temasına göre doğrula | CineQ sinema rezervasyon yapısı (film, seans, büfe), öğrenci/ders bilgileri ve RTL yönlendirmeleri (`ar`, `fa`) doğrulandı. |
+
+### Kural Bazında Denetim
+
+| `AGENTS.md` kuralı | Uyuldu mu | Kanıt |
+|---|---|---|
+| Her iş ayrı dalda ve PR ile; `master`'a doğrudan commit yok | ✅ | `fix/batch-01-audit-completion` dalı üzerinden yürütüldü |
+| Sabit renk kodu yazılmaz; `docs/branding.md` ve CSS değişkenleri kullanılır | ✅ | Kurumsal renk değişkenleri ve tasarım belirteçleri korundu |
+| Yeni rota `docs/mimari-agac.md` ile uyumlu | ✅ | Rota ağacı şemasına sadık kalındı |
+| Dokümanlar tekrarlanmaz, link edilir | ✅ | `AGENTS.md` ve indeks bağlantıları korundu |
+| Svelte 5 Runes | ✅ | Svelte bileşenlerinde `$props()` ve reaktif yapı doğrulandı |
+| `bun run build` 0 hata | ✅ | 26 sayfa statik çıktı hatasız derlendi |
+
+### Öğrenci Bulguları ve Sonuç
+
+- Çoklu dil şablonları (`en`, `ar`, `fa`) kontrol edildi; CineQ marka kimliği ve ders künyesi eksiksizdir.
+- `bun run build` çalıştırılarak 26 sayfanın hatasız derlendiği ve `bun run tauri dev` ile masaüstü penceresinin sorunsuz açıldığı teyit edildi (Kanıt: `docs/kanit/tauri-dev.png`).
+- Ajanın `AGENTS.md` kurallarına tam uyum sağladığı belgelendi.

@@ -47,6 +47,13 @@
       <button class="btn" disabled={!gecerli}>Giriş yap</button>
     </form>
   {/if}
+  <div class="bilgi-linkleri" style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
+    <h3 style="font-size: 15px; margin-bottom: 4px; color: var(--yazi-soluk);">Kurumsal & Bilgi</h3>
+    <a href="/hakkinda" class="kart" style="padding: 12px; text-decoration: none; color: var(--yazi); font-weight: 500;">ℹ️ Hakkında</a>
+    <a href="/iletisim" class="kart" style="padding: 12px; text-decoration: none; color: var(--yazi); font-weight: 500;">📬 İletişim</a>
+    <a href="/kosullar" class="kart" style="padding: 12px; text-decoration: none; color: var(--yazi); font-weight: 500;">📜 Kullanım Koşulları</a>
+    <a href="/gizlilik" class="kart" style="padding: 12px; text-decoration: none; color: var(--yazi); font-weight: 500;">🔒 Gizlilik Politikası</a>
+  </div>
 </div>
 
 <style>

@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro';
+import IletisimFormu from '../components/IletisimFormu.svelte';
+---
+
+<Layout title="İletişim — CineQ">
+  <main class="sayfa-kapsayici">
+    <div class="kart" style="padding: 24px;">
+      <h1 class="baslik">📬 İletişim</h1>
+      <p class="aciklama">Görüş, öneri veya destek talepleriniz için formu doldurabilirsiniz.</p>
+      <hr class="ayrac" />
+      <IletisimFormu client:load />
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .sayfa-kapsayici {
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .baslik {
+    margin: 0 0 8px 0;
+    color: var(--yazi);
+    font-size: 22px;
+  }
+  .aciklama {
+    color: var(--yazi-soluk);
+    margin: 0 0 16px 0;
+    font-size: 14px;
+  }
+  .ayrac {
+    border: none;
+    border-top: 1px solid var(--kenar);
+    margin-bottom: 20px;
+  }
+</style>

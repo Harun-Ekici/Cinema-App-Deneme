@@ -1,0 +1,29 @@
+---
+layout: ../layouts/Layout.astro
+title: Gizlilik Politikası — CineQ
+---
+
+import CanliRozet from '../components/react/CanliRozet';
+
+<div class="sayfa-kapsayici" style="padding: 16px; max-width: 600px; margin: 0 auto;">
+  <div class="kart" style="padding: 24px;">
+    # 🔒 Gizlilik Politikası
+
+    **Son Güncelleme:** 09 Ekim 2026
+
+    CineQ olarak kullanıcılarımızın gizliliğine ve veri güvenliğine büyük önem veriyoruz.
+
+    ### 1. Toplanan Veriler ve Yerel Depolama (localStorage)
+    Uygulamamız kullanıcıların kişisel verilerini, ödeme bilgilerini veya iletişim detaylarını harici sunucularda saklamaz. Bilet seçimleriniz, sepetiniz ve tema tercihleriniz yalnızca cihazınızın yerel hafızasında (`localStorage`) saklanır.
+
+    ### 2. KVKK ve Veri Koruma
+    6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, harici bir veri tabanına kişisel veri aktarımı yapılmamaktadır. Uygulama kapatıldığında veya veriler temizlendiğinde tüm oturum kayıtları silinebilir.
+
+    ### 3. Çerezler ve İzinler
+    Tauri WebView ortamında üçüncü taraf takip çerezleri (tracking cookies) kesinlikle kullanılmaz.
+
+    <div style="margin-top: 20px;">
+      <CanliRozet client:load etiket="Yerel Depolama Korumalı (KVKK Uyumlu)" />
+    </div>
+  </div>
+</div>

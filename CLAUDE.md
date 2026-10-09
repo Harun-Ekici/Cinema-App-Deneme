@@ -1,1 +1,1 @@
-See [AGENTS.md](./AGENTS.md) for project rules and workflows.
+See [AGENTS.md](AGENTS.md). All agent instructions and rules for this repository live there.

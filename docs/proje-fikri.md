@@ -41,3 +41,16 @@ Geleneksel sinema biletleme platformlarında büfe alışverişi bilet akışın
 ## 4. Hedef Kitle
 
 - Sinemaseverler, öğrenciler ve sinemaya gitmeden önce sıra beklemeden hem biletini hem büfe menüsünü tek dokunuşla ayırtmak isteyen mobil ve masaüstü kullanıcıları.
+
+## Bilet kodu biçimi (eğitmen önerisi)
+
+Görev 02, Rust tarafında üretilecek kodun biçiminin tanımlı olmasını ister. Öneri:
+
+`CNQ-<salon>-<seans>-<6 haneli rastgele>` — örnek: `CNQ-S3-2130-7F4K2Q`
+
+- `CNQ`: uygulama öneki
+- `S3`: salon numarası
+- `2130`: seans saati (21:30)
+- `7F4K2Q`: Rust tarafında üretilen rastgele bölüm
+
+Biçimi değiştirirseniz bu bölümü güncelleyin; Hafta 04'teki Rust komutu görevi bu tanıma göre yapılacak.

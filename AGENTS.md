@@ -17,6 +17,8 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
 | [`docs/kurulum.md`](docs/kurulum.md) | Kurulum & Bağımlılıklar | Çalışma ortamı hazırlığı, Bun ve Rust bağımlılıkları rehberi. |
 | [`docs/teslim.md`](docs/teslim.md) | Teslimat & Değerlendirme | Dönem sonu teslim kriterleri ve proje kontrol listesi. |
 | [`docs/tasks/`](docs/tasks/) | Görev Dokümanları | Eğitmenin tanımladığı haftalık aşamalar ve görev adımları. |
+| [`docs/ilerleme-batch-01.md`](docs/ilerleme-batch-01.md) | Batch 01 kontrol matrisi ve derleme kanıtı |  |
+| [`docs/ajan-uyum-testi.md`](docs/ajan-uyum-testi.md) | Ajan uyum testi kaydı |  |
 
 ## 2. Teknoloji Yığını ve Komutlar
 

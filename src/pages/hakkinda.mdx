@@ -2,42 +2,42 @@
 layout: ../layouts/Layout.astro
 title: Hakkında — CineQ
 ---
-
+import DilSecici from '../components/DilSecici.astro';
 import CanliRozet from '../components/react/CanliRozet';
 
 <div class="sayfa">
-  <div class="kart" style="padding: 20px;">
-    <h1>🎬 CineQ Hakkında</h1>
-    <p>
-      <strong>CineQ</strong>, geleneksel sinema biletleme ve büfe sıralarını ortadan kaldırmak için modern teknolojilerle geliştirilmiş yeni nesil bir masaüstü/mobil rezervasyon uygulamasıdır.
-    </p>
 
-    <div style="margin: 16px 0;">
-      <CanliRozet client:load etiket="Tauri v2 + Astro + Svelte 5" />
-    </div>
+<div class="kart" style="padding: 24px;">
 
-    <h2>👨‍💻 Geliştirici Bilgisi</h2>
-    <ul>
-      <li><strong>Geliştirici:</strong> Harun Ekici</li>
-      <li><strong>Bölüm:</strong> Bilgisayar Teknolojisi</li>
-      <li><strong>Üniversite:</strong> İstinye Üniversitesi</li>
-      <li><strong>Ders:</strong> MYO063 Mobil Programlama</li>
-    </ul>
+<DilSecici sayfa="hakkinda" />
 
-    <h2>✨ Mimari ve Teknolojiler</h2>
-    <ul>
-      <li><strong>Tauri v2 (Rust):</strong> Güvenli, yerel ve hafif masaüstü çalışma mimarisi.</li>
-      <li><strong>Astro:</strong> Çoklu framework destekli optimize statik sayfa üreticisi.</li>
-      <li><strong>Svelte 5 Runes:</strong> Reaktif modern arayüz ve durum yönetimi (<code>$state</code>, <code>$derived</code>).</li>
-      <li><strong>React Desteği:</strong> Zengin bileşen ekosisteminin MDX içinde doğrudan kullanımı.</li>
-    </ul>
+# CineQ Hakkında
 
-    <h2>📱 Uygulama Sayfaları</h2>
-    <ul>
-      <li><strong>Keşfet (<code>/</code>):</strong> Vizyondaki filmler, salonlar ve seans seçimi</li>
-      <li><strong>Büfe & Sepet (<code>/sepet</code>):</strong> Mısır, içecek siparişleri ve bilet toplamı</li>
-      <li><strong>Biletlerim (<code>/biletlerim</code>):</strong> Satın alınan biletler ve bilet doğrulama kodları</li>
-      <li><strong>Profil (<code>/profil</code>):</strong> Kullanıcı tercihleri, tema değişimi ve kurumsal bilgi sayfaları</li>
-    </ul>
-  </div>
+**CineQ**, geleneksel sinema biletleme ve büfe sıralarını ortadan kaldırmak için modern teknolojilerle geliştirilmiş yeni nesil bir masaüstü ve mobil rezervasyon uygulamasıdır.
+
+<CanliRozet client:load etiket="Tauri v2 + Astro + Svelte 5" />
+
+## Geliştirici bilgisi
+
+- **Geliştirici:** Harun Ekici
+- **Bölüm:** Bilgisayar Teknolojisi
+- **Üniversite:** İstinye Üniversitesi
+- **Ders:** MYO063 Mobil Programlama
+
+## Mimari ve teknolojiler
+
+- **Tauri v2 (Rust):** güvenli, yerel ve hafif masaüstü çalışma mimarisi.
+- **Astro:** çoklu framework destekli, optimize statik sayfa üreticisi.
+- **Svelte 5 Runes:** reaktif arayüz ve durum yönetimi (`$state`, `$derived`).
+- **React desteği:** zengin bileşen ekosisteminin MDX içinde doğrudan kullanımı.
+
+## Uygulama sayfaları
+
+- **Keşfet (`/`):** vizyondaki filmler, salonlar ve seans seçimi
+- **Büfe ve sepet (`/sepet`):** mısır, içecek siparişleri ve bilet toplamı
+- **Biletlerim (`/biletlerim`):** satın alınan biletler ve doğrulama kodları
+- **Profil (`/profil`):** kullanıcı tercihleri, tema değişimi ve bilgi sayfaları
+
+</div>
+
 </div>

@@ -1,0 +1,36 @@
+---
+layout: ../../layouts/Layout.astro
+title: Privacy Policy — CineQ
+---
+import DilSecici from '../../components/DilSecici.astro';
+import CanliRozet from '../../components/react/CanliRozet';
+
+<div class="sayfa">
+
+<div class="kart" style="padding: 24px;">
+
+<DilSecici sayfa="gizlilik" />
+
+# Privacy Policy
+
+**Last updated:** 9 October 2026
+
+At CineQ we care about our users' privacy and data security.
+
+## 1. Data collected and local storage
+
+The app does not store users' personal data, payment details or contact information on external servers. Your ticket selections, cart and theme preference are kept only in your device's local storage (`localStorage`).
+
+## 2. KVKK and data protection
+
+In line with the Turkish Personal Data Protection Law no. 6698 (KVKK), no personal data is transferred to an external database. When the app data is cleared, all session records are deleted.
+
+## 3. Cookies and permissions
+
+No third-party tracking cookies are used inside the Tauri WebView.
+
+<CanliRozet client:load etiket="Protected by local storage (KVKK compliant)" />
+
+</div>
+
+</div>

@@ -2,28 +2,35 @@
 layout: ../layouts/Layout.astro
 title: Gizlilik Politikası — CineQ
 ---
-
+import DilSecici from '../components/DilSecici.astro';
 import CanliRozet from '../components/react/CanliRozet';
 
-<div class="sayfa-kapsayici" style="padding: 16px; max-width: 600px; margin: 0 auto;">
-  <div class="kart" style="padding: 24px;">
-    # 🔒 Gizlilik Politikası
+<div class="sayfa">
 
-    **Son Güncelleme:** 09 Ekim 2026
+<div class="kart" style="padding: 24px;">
 
-    CineQ olarak kullanıcılarımızın gizliliğine ve veri güvenliğine büyük önem veriyoruz.
+<DilSecici sayfa="gizlilik" />
 
-    ### 1. Toplanan Veriler ve Yerel Depolama (localStorage)
-    Uygulamamız kullanıcıların kişisel verilerini, ödeme bilgilerini veya iletişim detaylarını harici sunucularda saklamaz. Bilet seçimleriniz, sepetiniz ve tema tercihleriniz yalnızca cihazınızın yerel hafızasında (`localStorage`) saklanır.
+# Gizlilik Politikası
 
-    ### 2. KVKK ve Veri Koruma
-    6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, harici bir veri tabanına kişisel veri aktarımı yapılmamaktadır. Uygulama kapatıldığında veya veriler temizlendiğinde tüm oturum kayıtları silinebilir.
+**Son güncelleme:** 09 Ekim 2026
 
-    ### 3. Çerezler ve İzinler
-    Tauri WebView ortamında üçüncü taraf takip çerezleri (tracking cookies) kesinlikle kullanılmaz.
+CineQ olarak kullanıcılarımızın gizliliğine ve veri güvenliğine önem veriyoruz.
 
-    <div style="margin-top: 20px;">
-      <CanliRozet client:load etiket="Yerel Depolama Korumalı (KVKK Uyumlu)" />
-    </div>
-  </div>
+## 1. Toplanan veriler ve yerel depolama
+
+Uygulama, kullanıcıların kişisel verilerini, ödeme bilgilerini veya iletişim ayrıntılarını harici sunucularda saklamaz. Bilet seçimleriniz, sepetiniz ve tema tercihiniz yalnızca cihazınızın yerel belleğinde (`localStorage`) tutulur.
+
+## 2. KVKK ve veri koruma
+
+6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca harici bir veri tabanına kişisel veri aktarımı yapılmaz. Uygulama verileri temizlendiğinde tüm oturum kayıtları silinir.
+
+## 3. Çerezler ve izinler
+
+Tauri WebView ortamında üçüncü taraf takip çerezleri kullanılmaz.
+
+<CanliRozet client:load etiket="Yerel depolama korumalı (KVKK uyumlu)" />
+
+</div>
+
 </div>

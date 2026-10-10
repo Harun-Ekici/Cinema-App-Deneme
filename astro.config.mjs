@@ -1,4 +1,3 @@
-// @ts-check
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 

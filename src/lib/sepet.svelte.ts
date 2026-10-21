@@ -1,27 +1,6 @@
 // CineQ Sepet Durum Yönetimi — LocalStorage Kalıcılığı & İndirim Kodu (Svelte 5 Runes)
-import type { BiletKategorisi, Film, BufeUrunu } from "./data";
-
-export interface BiletSepetKalemi {
-  tur: "bilet";
-  film: Film;
-  bilet: BiletKategorisi;
-  seans: string;
-  salon: string;
-  koltuklar: string[];
-  adet: number;
-  vipKoltukSayisi: number;
-  toplamTutar: number;
-}
-
-export interface BufeSepetKalemi {
-  tur: "bufe";
-  urun: BufeUrunu;
-  porsiyonAdi?: string;
-  birimFiyat: number;
-  adet: number;
-}
-
-export type SepetKalemi = BiletSepetKalemi | BufeSepetKalemi;
+import type { BiletSepetKalemi, BufeSepetKalemi, SepetKalemi } from "./types";
+import type { BiletKategorisi, Film, BufeUrunu } from "./types";
 
 const ANAHTAR_BILETLER = "cineq_sepet_biletler";
 const ANAHTAR_BUFE = "cineq_sepet_bufe";

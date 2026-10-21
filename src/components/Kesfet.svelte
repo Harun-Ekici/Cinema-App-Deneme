@@ -1,7 +1,8 @@
 <script lang="ts">
   // CineQ Keşfet Ekranı — Çift Filtre Barı, Responsive 4 Kademeli Izgara ve Svelte 5 Runes
   import EtkinlikKart from "$lib/components/EtkinlikKart.svelte";
-  import { filmler, type FilmDurum, type SalonTipi } from "$lib/data";
+  import { filmler } from "$lib/data";
+  import type { FilmDurum, SalonTipi } from "$lib/types";
 
   // Tab 1: Vizyon Durumu Filtresi
   const durumSekmeleri = ["Tümü", "Vizyondakiler", "Pek Yakında"] as const;

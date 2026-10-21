@@ -1,6 +1,7 @@
 <script lang="ts">
   // CineQ Film Detay Ekranı — Dinamik VIP Koltuk Fiyatlandırması, Yaş/Ses Rozetleri, Porsiyonlu Büfe (Svelte 5 Runes)
-  import { type Film, bufeUrunleri, tl, type BufeUrunu, type BufePorsiyon } from "$lib/data";
+  import { bufeUrunleri, tl } from "$lib/data";
+  import type { BufePorsiyon, BufeUrunu, Film } from "$lib/types";
   import { sepet } from "$lib/sepet.svelte";
 
   let { etkinlik: e }: { etkinlik: Film } = $props();

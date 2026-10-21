@@ -20,6 +20,7 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
 | [`docs/gorev-sartnamesi.md`](docs/gorev-sartnamesi.md) | Görev Şartnamesi | Her görevden önce doldurulacak kısa şartname şablonu. |
 | [`docs/istemler/README.md`](docs/istemler/README.md) | İstem Günlükleri | Görev istemi, araç/model, plan, düzeltmeler ve doğrulama kayıtlarının biçimi. |
 | [`docs/istemler/10-calisma-yontemi.md`](docs/istemler/10-calisma-yontemi.md) | Görev 10 Kaydı | Çalışma yöntemi görevinin istem ve doğrulama kaydı. |
+| [`docs/veri-modeli.md`](docs/veri-modeli.md) | Veri Modeli | Film, seans, bilet ve büfe verilerinin alanları ile aralarındaki ilişkiler. |
 | [`docs/ilerleme-batch-01.md`](docs/ilerleme-batch-01.md) | Batch 01 kontrol matrisi ve derleme kanıtı |  |
 | [`docs/ajan-uyum-testi.md`](docs/ajan-uyum-testi.md) | Ajan uyum testi kaydı |  |
 
@@ -63,4 +64,5 @@ Her görevde aşağıdaki sırayı uygula:
 - **Svelte 5 Runes:** Bileşenlerde yalnızca Runes (`$state`, `$derived`, `$props`) kullanılır. Eski Svelte 4 sözdizimi (`export let`, `$:`) kullanılmaz.
 - **SSR Güvenliği:** Sayfa bileşenlerinde SSR güvenliği gözetilmeli; doğrudan `window` veya `localStorage` erişimleri istemci tarafında veya korumalı (`typeof window !== 'undefined'`) yapılmalıdır.
 - **DRY Stil Kuralı:** Asla inline hardcoded hex kodları uydurulmaz; daima `docs/branding.md` ve CSS değişkenlerine başvurulur.
+- **Veri Sözleşmesi:** Yeni veri alanı önce `src/lib/types/` içinde tanımlanır, sonra bileşenlerde kullanılır.
 - **Karakter ve Dil Standardı:** Kod tabanında, belgelerde ve commit mesajlarında kesinlikle Çince, Japonca veya alakasız yabancı karakterler kullanılmaz. Yalnızca Türkçe ve İngilizce standart karakterler geçerlidir.

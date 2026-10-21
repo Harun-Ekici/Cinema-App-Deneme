@@ -1,19 +1,18 @@
-// CineQ Sinema Büfe Veri Tipleri
 export type BufeKategori = "Misir" | "Icecek" | "Menu" | "Atistirmalik";
 export type BufeRozet = "Popüler" | "Fırsat" | "Çift Kişilik";
 
 export interface BufePorsiyon {
-  ad: string; // "Küçük" | "Orta" | "Büyük"
-  fiyat: number;
+  ad: string; // Büfe ürününün seçilebilir porsiyon adı.
+  fiyat: number; // Porsiyonun Türk lirası cinsinden fiyatı.
 }
 
 export interface BufeUrunu {
-  id: string;
-  ad: string;
-  kategori: BufeKategori;
-  fiyat: number;
-  aciklama: string;
-  ikon: string;
-  rozet?: BufeRozet;
-  porsiyonlar?: BufePorsiyon[];
+  id: string; // Büfe ürününün benzersiz kimliği.
+  ad: string; // Ürünün menüde görünen adı.
+  kategori: BufeKategori; // Ürünün sabit büfe kategori seçeneklerinden biri.
+  fiyat: number; // Ürünün varsayılan Türk lirası fiyatı.
+  aciklama: string; // Ürün içeriğini açıklayan kısa metin.
+  ikon: string; // Ürünü temsil eden simge.
+  rozet?: BufeRozet; // Ürün için isteğe bağlı tanıtım rozeti.
+  porsiyonlar?: BufePorsiyon[]; // Ürünün isteğe bağlı porsiyon ve fiyat seçenekleri.
 }

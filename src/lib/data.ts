@@ -1,6 +1,18 @@
-import type { Film, BufeUrunu, BufePorsiyon, BufeRozet, BiletKategorisi, FilmTur, FilmDurum, SalonTipi, YasSiniri } from "./types";
+import type {
+  Bilet,
+  BufePorsiyon,
+  BufeRozet,
+  BufeUrunu,
+  BiletKategorisi,
+  Film,
+  FilmDurum,
+  FilmTur,
+  SalonTipi,
+  Seans,
+  YasSiniri,
+} from "./types";
 
-export type { Film, BufeUrunu, BufePorsiyon, BufeRozet, BiletKategorisi, FilmTur, FilmDurum, SalonTipi, YasSiniri };
+export type { Bilet, Film, Seans, BufeUrunu, BufePorsiyon, BufeRozet, BiletKategorisi, FilmTur, FilmDurum, SalonTipi, YasSiniri };
 
 // Geriye dönük uyumluluk takma adları
 export type Etkinlik = Film;
@@ -202,6 +214,32 @@ export const bufeUrunleri: BufeUrunu[] = [
     ikon: "🍫",
     rozet: "Fırsat",
   },
+  {
+    id: "dondurma-kup",
+    ad: "Çikolatalı Dondurma",
+    kategori: "Atistirmalik",
+    fiyat: 80,
+    aciklama: "Sinema keyfi için tek porsiyon çikolatalı dondurma",
+    ikon: "🍦",
+  },
+];
+
+export const seanslar: Seans[] = [
+  { id: "s1-20261021-1300", filmId: 1, tarih: "2026-10-21", saat: "13:00", salon: "Salon 1", format: "IMAX", durum: "planlandi" },
+  { id: "s2-20261021-1730", filmId: 2, tarih: "2026-10-21", saat: "17:30", salon: "Salon 2", format: "2D", durum: "planlandi" },
+  { id: "s3-20261021-1400", filmId: 3, tarih: "2026-10-21", saat: "14:00", salon: "Salon 3", format: "3D", durum: "aktif" },
+  { id: "s4-20261021-1830", filmId: 4, tarih: "2026-10-21", saat: "18:30", salon: "Salon 4", format: "VIP Salon", durum: "planlandi" },
+  { id: "s5-20261021-1845", filmId: 5, tarih: "2026-10-21", saat: "18:45", salon: "Salon 5", format: "2D", durum: "planlandi" },
+  { id: "s6-20261022-2030", filmId: 6, tarih: "2026-10-22", saat: "20:30", salon: "Salon 1", format: "IMAX", durum: "planlandi" },
+];
+
+export const biletKayitlari: Bilet[] = [
+  { kod: "CNQ-S1-1300-A1B2C3", baslik: "Dune: Çöl Gezegeni Bölüm İki", tarih: "2026-10-21T10:00:00.000Z", seans: "13:00", salon: "Salon 1", koltuklar: ["A3"], kategori: "Öğrenci", adet: 1, toplamTutar: 150, filmId: 1, seansId: "s1-20261021-1300", durum: "onaylandi" },
+  { kod: "CNQ-S2-1730-D4E5F6", baslik: "Oppenheimer", tarih: "2026-10-21T11:00:00.000Z", seans: "17:30", salon: "Salon 2", koltuklar: ["B2", "B3"], kategori: "Tam Bilet", adet: 2, toplamTutar: 360, filmId: 2, seansId: "s2-20261021-1730", durum: "rezerve" },
+  { kod: "CNQ-S3-1400-G7H8J9", baslik: "Ters Yüz 2 (Inside Out 2)", tarih: "2026-10-21T12:00:00.000Z", seans: "14:00", salon: "Salon 3", koltuklar: ["C1"], kategori: "Çocuk / Öğrenci", adet: 1, toplamTutar: 130, filmId: 3, seansId: "s3-20261021-1400", durum: "kullanildi" },
+  { kod: "CNQ-S4-1830-K1L2M3", baslik: "Interstellar (Yeniden Vizyonda)", tarih: "2026-10-21T13:00:00.000Z", seans: "18:30", salon: "Salon 4", koltuklar: ["D4"], kategori: "VIP Yatar Koltuk", adet: 1, toplamTutar: 320, filmId: 4, seansId: "s4-20261021-1830", durum: "onaylandi" },
+  { kod: "CNQ-S5-1845-N4P5Q6", baslik: "Ölümlü Dünya 2", tarih: "2026-10-21T14:00:00.000Z", seans: "18:45", salon: "Salon 5", koltuklar: ["A5"], kategori: "Tam Bilet", adet: 1, toplamTutar: 170, filmId: 5, seansId: "s5-20261021-1845", durum: "iptal" },
+  { kod: "CNQ-S1-2030-R7S8T9", baslik: "Gladyatör II", tarih: "2026-10-22T15:00:00.000Z", seans: "20:30", salon: "Salon 1", koltuklar: ["B5", "B6"], kategori: "Ön Satış Tam", adet: 2, toplamTutar: 420, filmId: 6, seansId: "s6-20261022-2030", durum: "rezerve" },
 ];
 
 export function filmBul(id: number): Film | undefined {

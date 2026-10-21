@@ -1,24 +1,9 @@
 // CineQ Biletlerim Durum Yönetimi (Svelte 5 Runes)
 import { invoke, isTauri } from "@tauri-apps/api/core";
-import type { BiletSepetKalemi, BufeSepetKalemi, SepetKalemi } from "./sepet.svelte";
+import type { Bilet as BiletModel, BiletSepetKalemi, BufeSepetKalemi, SepetKalemi } from "./types";
 
-export interface BiletKaydi {
-  kod: string;
-  baslik: string;
-  tarih: string;
-  seans: string;
-  salon: string;
-  koltuklar: string[];
-  kategori: string;
-  adet: number;
-  vipKoltukSayisi?: number;
-  bufeOzet?: string;
-  indirimBilgi?: string;
-  toplamTutar: number;
-}
-
-// Geriye dönük arayüz uyumluluğu
-export type Bilet = BiletKaydi;
+export type BiletKaydi = BiletModel;
+export type Bilet = BiletModel;
 
 const ANAHTAR = "cineq_biletlerim";
 
@@ -100,6 +85,8 @@ class Biletlerim {
         bufeOzet,
         indirimBilgi,
         toplamTutar: b.toplamTutar ?? b.bilet.fiyat * b.adet,
+        filmId: b.film.id,
+        durum: "onaylandi",
       });
     }
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   // CineQ Film Kartı Bileşeni — Svelte 5 Runes ($props, $derived)
-  import { type Film, tl } from "$lib/data";
+  import { tl } from "$lib/data";
+  import type { Film } from "$lib/types";
 
   let { etkinlik }: { etkinlik: Film } = $props();
 

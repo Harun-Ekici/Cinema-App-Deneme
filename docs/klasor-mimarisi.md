@@ -64,6 +64,7 @@ Cinema-App-Deneme/
 
 ### 7. `src/lib/` (Durum ve İş Mantığı)
 - **Ne konur?** Svelte 5 `$state` store'ları (sepet, biletler, tema), mock veriler (`data.ts`) ve Rust invoke çağrıları.
+- **Alt alanlar:** `i18n/` kullanıcı arayüzünde paylaşılan çok dilli metin sözlüklerini içerir.
 - **Nasıl import edilir?** `$lib/data` veya `$lib/sepet.svelte` şeklinde doğrudan alias ile çağrılır.
 
 ### 8. `src/types/` (Tip Tanımları)

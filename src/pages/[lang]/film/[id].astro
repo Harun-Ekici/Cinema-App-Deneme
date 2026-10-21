@@ -1,0 +1,29 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import EtkinlikDetay from '../../../components/EtkinlikDetay.svelte';
+import { filmler, type Film } from '$lib/data';
+import type { UygulamaDili } from '$lib/i18n/liste-durumlari';
+
+type OnekliDil = Exclude<UygulamaDili, 'tr'>;
+
+export function getStaticPaths() {
+  const diller: OnekliDil[] = ['en', 'ar', 'fa'];
+  return diller.flatMap((lang) =>
+    filmler.map((film) => ({
+      params: { lang, id: String(film.id) },
+      props: { film, lang },
+    })),
+  );
+}
+
+interface Props {
+  film: Film;
+  lang: OnekliDil;
+}
+
+const { film, lang } = Astro.props;
+---
+
+<Layout title={`${film.baslik} — CineQ`}>
+  <EtkinlikDetay client:load etkinlik={film} lang={lang} />
+</Layout>

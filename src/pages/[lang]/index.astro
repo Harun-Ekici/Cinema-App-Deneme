@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Kesfet from '../../components/Kesfet.svelte';
+import type { UygulamaDili } from '$lib/i18n/liste-durumlari';
+
+type OnekliDil = Exclude<UygulamaDili, 'tr'>;
+
+export function getStaticPaths() {
+  const diller: OnekliDil[] = ['en', 'ar', 'fa'];
+  return diller.map((lang) => ({ params: { lang } }));
+}
+---
+
+<Layout title="CineQ — Vizyondaki Filmler & Keşfet">
+  <Kesfet client:load />
+</Layout>

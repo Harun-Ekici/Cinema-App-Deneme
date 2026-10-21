@@ -20,6 +20,7 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
 | [`docs/gorev-sartnamesi.md`](docs/gorev-sartnamesi.md) | Görev Şartnamesi | Her görevden önce doldurulacak kısa şartname şablonu. |
 | [`docs/istemler/README.md`](docs/istemler/README.md) | İstem Günlükleri | Görev istemi, araç/model, plan, düzeltmeler ve doğrulama kayıtlarının biçimi. |
 | [`docs/istemler/10-calisma-yontemi.md`](docs/istemler/10-calisma-yontemi.md) | Görev 10 Kaydı | Çalışma yöntemi görevinin istem ve doğrulama kaydı. |
+| [`docs/istemler/14-detay-ekrani.md`](docs/istemler/14-detay-ekrani.md) | Görev 14 Kaydı | Film detay rotası, geri dönüş ve çok dilli doğrulama kanıtları. |
 | [`docs/gelistirme-notlari.md`](docs/gelistirme-notlari.md) | Geliştirme Notları | Geliştirme sırasında liste durumlarını URL parametresiyle sınama adımları. |
 | [`docs/veri-modeli.md`](docs/veri-modeli.md) | Veri Modeli | Film, seans, bilet ve büfe verilerinin alanları ile aralarındaki ilişkiler. |
 | [`docs/ilerleme-batch-01.md`](docs/ilerleme-batch-01.md) | Batch 01 kontrol matrisi ve derleme kanıtı |  |

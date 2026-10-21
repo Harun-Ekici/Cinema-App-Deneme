@@ -28,13 +28,16 @@ Cinema-App-Deneme/
 
 
 CineQ
-├── / (Ana Sayfa — Keşfet)
+├── / ve /[lang] (Ana Sayfa — Keşfet; Türkçe kök, EN/AR/FA önekli)
 │   ├── Canlı film arama ve tür/kategori filtreleme
 │   └── Vizyondaki filmler ve seans listesi
 │
-├── /etkinlik/[id] (Film & Seans Detayı)
+├── /film/[id] ve /[lang]/film/[id] (Film & Seans Detayı; 4 dil × 6 film)
 │   ├── Salon, tarih, seans saati ve koltuk seçim matrisi
-│   └── Büfe ürünleri (mısır, içecek) seçimi ve sepete ekleme
+│   ├── Büfe ürünleri (mısır, içecek) seçimi ve sepete ekleme
+│   └── Filtreli listeye dönüş query parametreleriyle korunur
+├── /etkinlik/[id] (Eski film detay adresleri için uyumluluk rotası)
+├── /404 (Geçersiz rota veya bulunamayan film için yerelleştirilmiş durum)
 │
 ├── /sepet (İşlem / Sepet / Onay)
 │   ├── Seçilen koltuklar ve büfe siparişleri özeti
@@ -88,13 +91,13 @@ Ekran Kırılımları ve Düzen Kuralları:
 
 ## Dil rotaları
 
-Dört bilgi sayfası (`hakkinda`, `iletisim`, `kosullar`, `gizlilik`) dört dilde yayınlanır. Türkçe kök rotadadır; diğer diller dil önekiyle açılır ve `<html>` etiketi dile göre `lang` ve `dir` alır.
+Dört bilgi sayfası (`hakkinda`, `iletisim`, `kosullar`, `gizlilik`) ve keşfet ana ekranı dört dilde yayınlanır. Film detayları Türkçe kök rotada ve EN/AR/FA dil önekleriyle oluşturulur; toplamda 24 film detay sayfası vardır. Türkçe kök rotadadır; diğer diller dil önekiyle açılır ve `<html>` etiketi dile göre `lang` ve `dir` alır.
 
 | Dil | Önek | Örnek | Yön |
 |---|---|---|---|
-| Türkçe | yok | `/hakkinda` | `ltr` |
-| English | `/en` | `/en/hakkinda` | `ltr` |
-| العربية | `/ar` | `/ar/hakkinda` | `rtl` |
-| فارسی | `/fa` | `/fa/hakkinda` | `rtl` |
+| Türkçe | yok | `/hakkinda`, `/film/1` | `ltr` |
+| English | `/en` | `/en/hakkinda`, `/en/film/1` | `ltr` |
+| العربية | `/ar` | `/ar/hakkinda`, `/ar/film/1` | `rtl` |
+| فارسی | `/fa` | `/fa/hakkinda`, `/fa/film/1` | `rtl` |
 
 Sayfalar arası dil geçişi `src/components/DilSecici.astro` ile yapılır. Yeni bir bilgi sayfası dört dil rotasıyla birlikte eklenir.

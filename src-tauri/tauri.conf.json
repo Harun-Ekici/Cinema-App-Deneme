@@ -14,7 +14,9 @@
       {
         "title": "CineQ — Sinema & Büfe Rezervasyonu",
         "width": 420,
-        "height": 820
+        "height": 820,
+        "minWidth": 360,
+        "minHeight": 640
       }
     ],
     "security": {

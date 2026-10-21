@@ -179,6 +179,18 @@
   --kart-alt-metin-yazi-boyutu: 0.875rem;
   --kart-alt-metin-satir-sayisi: 3;
   --kart-satir-yuksekligi: 1.4;
+  --durum-aralik: 1rem;
+  --durum-oge-araligi: 0.75rem;
+  --durum-ic-bosluk: 2rem 1rem;
+  --durum-dugme-dikey-bosluk: 0.5rem;
+  --durum-dugme-yatay-bosluk: 1.125rem;
+  --durum-ikon-boyutu: 2.5rem;
+  --durum-baslik-boyutu: 1.125rem;
+  --durum-metin-genisligi: 36rem;
+  --durum-iskelet-baslik-yuksekligi: 1rem;
+  --durum-iskelet-metin-yuksekligi: 0.75rem;
+  --durum-iskelet-solukluk: 0.45;
+  --durum-animasyon-suresi: 1.2s;
 }
 
 * {

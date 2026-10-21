@@ -1,14 +1,58 @@
 <script lang="ts">
   // CineQ Biletlerim Ekranı — Dijital Perforasyonlu Bilet, Barkod/QR ve Paylaşım (Svelte 5 Runes)
   import { onMount } from "svelte";
+  import BosDurum from "$lib/components/ui/BosDurum.svelte";
+  import HataDurumu from "$lib/components/ui/HataDurumu.svelte";
+  import Yukleniyor from "$lib/components/ui/Yukleniyor.svelte";
   import { biletlerim, type BiletKaydi } from "$lib/biletler.svelte";
   import { tl } from "$lib/data";
+  import {
+    gelistirmeDurumunuAl,
+    gelistirmeDurumunuTemizle,
+    listeDurumMetinleri,
+    uygulamaDiliniAl,
+    type ListeDurumu,
+    type UygulamaDili,
+  } from "$lib/i18n/liste-durumlari";
 
   onMount(() => {
-    biletlerim.yenile();
+    dil = uygulamaDiliniAl();
+    void biletleriYukle();
   });
 
   let kopyalandiKod = $state<string | null>(null);
+  let listeDurumu = $state<ListeDurumu>("yukleniyor");
+  let dil = $state<UygulamaDili>("tr");
+  let metin = $derived(listeDurumMetinleri[dil]);
+
+  async function biletleriYukle() {
+    listeDurumu = "yukleniyor";
+
+    try {
+      await Promise.resolve();
+      const testDurumu = gelistirmeDurumunuAl();
+
+      if (testDurumu === "yukleniyor") return;
+      if (testDurumu === "hata") throw new Error("Geliştirme hata durumu etkin.");
+
+      biletlerim.yenile();
+      if (biletlerim.hata) throw biletlerim.hata;
+
+      listeDurumu = testDurumu === "bos" || biletlerim.liste.length === 0 ? "bos" : "dolu";
+    } catch (error) {
+      listeDurumu = "hata";
+      console.error("Bilet listesi yüklenemedi.", error);
+    }
+  }
+
+  function tekrarYukle() {
+    gelistirmeDurumunuTemizle();
+    void biletleriYukle();
+  }
+
+  function filmleriKesfet() {
+    window.location.href = "/";
+  }
 
   async function biletiPaylas(b: BiletKaydi) {
     const metin = [
@@ -42,12 +86,24 @@
 <div class="sayfa biletlerim-sayfa">
   <div class="baslik-alani">
     <h1>Biletlerim & Rezervasyonlarım</h1>
-    {#if biletlerim.liste.length > 0}
+    {#if listeDurumu === "dolu" && biletlerim.liste.length > 0}
       <span class="adet-etiket">{biletlerim.liste.length} Bilet</span>
     {/if}
   </div>
 
-  {#each biletlerim.liste as b (b.kod)}
+  {#if listeDurumu === "yukleniyor"}
+    <Yukleniyor mesaj={metin.yukleniyorBiletler} kartSayisi={2} />
+  {:else if listeDurumu === "hata"}
+    <HataDurumu mesaj={metin.biletHatasi} dugmeMetni={metin.tekrarDene} tekrarDene={tekrarYukle} />
+  {:else if listeDurumu === "bos"}
+    <BosDurum
+      baslik={metin.biletYokBaslik}
+      aciklama={metin.biletYokAciklama}
+      dugmeMetni={metin.filmleriKesfet}
+      tikla={filmleriKesfet}
+    />
+  {:else}
+    {#each biletlerim.liste as b (b.kod)}
     <div class="kart bilet-karti">
       <!-- Bilet Üst Kupon Bölümü -->
       <div class="bilet-ust">
@@ -144,13 +200,8 @@
         </div>
       </div>
     </div>
-  {:else}
-    <div class="kart bos-bilet">
-      <span class="bos-ikon">🎟️</span>
-      <p class="bos-mesaj">Henüz aktif veya geçmiş bir sinema biletiniz bulunmuyor.</p>
-      <a href="/" class="kesfet-link">Vizyondaki Filmlere Göz Atın →</a>
-    </div>
-  {/each}
+    {/each}
+  {/if}
 </div>
 
 <style>
@@ -419,30 +470,4 @@
     color: var(--renk-ana);
   }
 
-  .bos-bilet {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 16px;
-    text-align: center;
-    gap: 12px;
-  }
-
-  .bos-ikon {
-    font-size: 42px;
-  }
-
-  .bos-mesaj {
-    margin: 0;
-    font-size: 15px;
-    color: var(--yazi-soluk);
-  }
-
-  .kesfet-link {
-    color: var(--renk-ana);
-    font-weight: 700;
-    font-size: 14px;
-    text-decoration: underline;
-  }
 </style>

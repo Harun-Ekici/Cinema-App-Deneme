@@ -1,8 +1,54 @@
 <script lang="ts">
   // CineQ Keşfet Ekranı — Çift Filtre Barı, Responsive 4 Kademeli Izgara ve Svelte 5 Runes
+  import { onMount } from "svelte";
   import Kart from "$lib/components/ui/Kart.svelte";
+  import BosDurum from "$lib/components/ui/BosDurum.svelte";
+  import HataDurumu from "$lib/components/ui/HataDurumu.svelte";
+  import Yukleniyor from "$lib/components/ui/Yukleniyor.svelte";
   import { filmler } from "$lib/data";
-  import type { Film, FilmDurum, KartProps, SalonTipi } from "$lib/types";
+  import type { Film, KartProps } from "$lib/types";
+  import {
+    gelistirmeDurumunuAl,
+    gelistirmeDurumunuTemizle,
+    listeDurumMetinleri,
+    uygulamaDiliniAl,
+    type ListeDurumu,
+    type UygulamaDili,
+  } from "$lib/i18n/liste-durumlari";
+
+  let listeDurumu = $state<ListeDurumu>("yukleniyor");
+  let yuklenenFilmler = $state<Film[]>([]);
+  let dil = $state<UygulamaDili>("tr");
+  let metin = $derived(listeDurumMetinleri[dil]);
+
+  onMount(() => {
+    dil = uygulamaDiliniAl();
+    void filmleriYukle();
+  });
+
+  async function filmleriYukle() {
+    listeDurumu = "yukleniyor";
+
+    try {
+      await Promise.resolve();
+      const testDurumu = gelistirmeDurumunuAl();
+
+      if (testDurumu === "yukleniyor") return;
+      if (testDurumu === "hata") throw new Error("Geliştirme hata durumu etkin.");
+
+      yuklenenFilmler = testDurumu === "bos" ? [] : [...filmler];
+      listeDurumu = yuklenenFilmler.length > 0 ? "dolu" : "bos";
+    } catch (error) {
+      yuklenenFilmler = [];
+      listeDurumu = "hata";
+      console.error("Film listesi yüklenemedi.", error);
+    }
+  }
+
+  function tekrarYukle() {
+    gelistirmeDurumunuTemizle();
+    void filmleriYukle();
+  }
 
   // Tab 1: Vizyon Durumu Filtresi
   const durumSekmeleri = ["Tümü", "Vizyondakiler", "Pek Yakında"] as const;
@@ -19,7 +65,7 @@
 
   // $derived: Tüm filtreler reaktif olarak tek hamlede hesaplanır
   const filtrelenmisFilmler = $derived(
-    filmler.filter((film) => {
+    yuklenenFilmler.filter((film) => {
       // 1. Durum filtreleme
       const durumUyumu =
         seciliDurum === "Tümü" ||
@@ -41,6 +87,13 @@
       return durumUyumu && salonUyumu && aramaUyumu;
     }),
   );
+  let gorunenDurum = $derived(
+    listeDurumu === "yukleniyor" || listeDurumu === "hata"
+      ? listeDurumu
+      : filtrelenmisFilmler.length === 0
+        ? "bos"
+        : "dolu",
+  );
 
   function filmKartinaDonustur(film: Film): KartProps {
     return {
@@ -51,79 +104,86 @@
       href: `/etkinlik/${film.id}`,
     };
   }
+
+  function filtreleriTemizle() {
+    seciliDurum = "Tümü";
+    seciliSalon = "Tümü";
+    arama = "";
+  }
 </script>
 
 <div class="sayfa kesfet-sayfa">
-  <!-- Arama Çubuğu -->
-  <div class="arama-kapsayici">
-    <span class="arama-ikon" aria-hidden="true">🔍</span>
-    <input
-      class="arama"
-      type="search"
-      placeholder="Film adı, tür veya yönetmen ara..."
-      bind:value={arama}
-    />
-    {#if arama.length > 0}
-      <button class="temizle-btn" onclick={() => (arama = "")} aria-label="Aramayı temizle">✕</button>
-    {/if}
-  </div>
-
-  <!-- Çift Filtre Barı -->
-  <div class="filtre-gruplari">
-    <!-- Bar 1: Vizyon Durumu -->
-    <div class="filtre-cubugu bar-durum" role="tablist" aria-label="Vizyon Durumu">
-      {#each durumSekmeleri as d}
-        <button
-          type="button"
-          class="sekme-btn"
-          class:aktif={seciliDurum === d}
-          onclick={() => (seciliDurum = d)}
-          role="tab"
-          aria-selected={seciliDurum === d}
-        >
-          {d}
-        </button>
-      {/each}
+  {#if gorunenDurum === "yukleniyor"}
+    <Yukleniyor mesaj={metin.yukleniyorFilmler} />
+  {:else if gorunenDurum === "hata"}
+    <HataDurumu mesaj={metin.filmHatasi} dugmeMetni={metin.tekrarDene} tekrarDene={tekrarYukle} />
+  {:else}
+    <!-- Arama Çubuğu -->
+    <div class="arama-kapsayici">
+      <span class="arama-ikon" aria-hidden="true">🔍</span>
+      <input
+        class="arama"
+        type="search"
+        placeholder="Film adı, tür veya yönetmen ara..."
+        bind:value={arama}
+      />
+      {#if arama.length > 0}
+        <button class="temizle-btn" onclick={() => (arama = "")} aria-label="Aramayı temizle">✕</button>
+      {/if}
     </div>
 
-    <!-- Bar 2: Salon Tipi -->
-    <div class="filtre-cubugu bar-salon" role="tablist" aria-label="Salon Tipi">
-      {#each salonSekmeleri as s}
-        <button
-          type="button"
-          class="sekme-btn"
-          class:aktif={seciliSalon === s}
-          onclick={() => (seciliSalon = s)}
-          role="tab"
-          aria-selected={seciliSalon === s}
-        >
-          {s}
-        </button>
-      {/each}
-    </div>
-  </div>
-
-  <!-- Responsive Izgara Sırası: Telefon (1) -> Tablet (2) -> Masaüstü (3) -> Büyük Ekran (4) -->
-  <div class="film-izgara">
-    {#each filtrelenmisFilmler as film (film.id)}
-      <Kart {...filmKartinaDonustur(film)} />
-    {:else}
-      <div class="bos-durum">
-        <span class="bos-ikon">🎬</span>
-        <p class="bos-metin">Aramanıza veya seçilen filtrelere uygun film bulunamadı.</p>
-        <button
-          class="filtre-sifirla-btn"
-          onclick={() => {
-            seciliDurum = "Tümü";
-            seciliSalon = "Tümü";
-            arama = "";
-          }}
-        >
-          Filtreleri Sıfırla
-        </button>
+    <!-- Çift Filtre Barı -->
+    <div class="filtre-gruplari">
+      <div class="filtre-cubugu bar-durum" role="tablist" aria-label="Vizyon Durumu">
+        {#each durumSekmeleri as d}
+          <button
+            type="button"
+            class="sekme-btn"
+            class:aktif={seciliDurum === d}
+            onclick={() => (seciliDurum = d)}
+            role="tab"
+            aria-selected={seciliDurum === d}
+          >
+            {d}
+          </button>
+        {/each}
       </div>
-    {/each}
-  </div>
+
+      <div class="filtre-cubugu bar-salon" role="tablist" aria-label="Salon Tipi">
+        {#each salonSekmeleri as s}
+          <button
+            type="button"
+            class="sekme-btn"
+            class:aktif={seciliSalon === s}
+            onclick={() => (seciliSalon = s)}
+            role="tab"
+            aria-selected={seciliSalon === s}
+          >
+            {s}
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <div class="film-izgara">
+      {#if gorunenDurum === "dolu"}
+        {#each filtrelenmisFilmler as film (film.id)}
+          <Kart {...filmKartinaDonustur(film)} />
+        {/each}
+      {:else}
+        {#if yuklenenFilmler.length === 0}
+          <BosDurum baslik={metin.filmYokBaslik} aciklama={metin.filmYokAciklama} />
+        {:else}
+          <BosDurum
+            baslik={metin.sonucYokBaslik}
+            aciklama={metin.aramaSonucuYok}
+            dugmeMetni={metin.filtreleriTemizle}
+            tikla={filtreleriTemizle}
+          />
+        {/if}
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -223,8 +283,6 @@
     box-shadow: 0 2px 8px var(--kenar);
   }
 
-  /* Responsive Izgara Sırası */
-  /* 1. Telefon (Varsayılan): 1 Sütun */
   .film-izgara {
     display: grid;
     grid-template-columns: 1fr;
@@ -232,7 +290,6 @@
     width: 100%;
   }
 
-  /* 2. Tablet (768px+): 2 Sütun */
   @media (min-width: 768px) {
     .film-izgara {
       grid-template-columns: repeat(2, 1fr);
@@ -240,7 +297,6 @@
     }
   }
 
-  /* 3. Masaüstü (1024px+): 3 Sütun */
   @media (min-width: 1024px) {
     .film-izgara {
       grid-template-columns: repeat(3, 1fr);
@@ -248,52 +304,10 @@
     }
   }
 
-  /* 4. Büyük Ekran (1440px+): 4 Sütun */
   @media (min-width: 1440px) {
     .film-izgara {
       grid-template-columns: repeat(4, 1fr);
       gap: 28px;
     }
-  }
-
-  .bos-durum {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 16px;
-    text-align: center;
-    background: var(--kart);
-    border: 1px dashed var(--kenar);
-    border-radius: var(--radius);
-    gap: 12px;
-  }
-
-  .bos-ikon {
-    font-size: 38px;
-  }
-
-  .bos-metin {
-    margin: 0;
-    font-size: 15px;
-    color: var(--yazi-soluk);
-  }
-
-  .filtre-sifirla-btn {
-    padding: 8px 18px;
-    border: 1px solid var(--renk-ana);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--renk-ana);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
-  }
-
-  .filtre-sifirla-btn:hover {
-    background: var(--renk-ana);
-    color: var(--header-yazi);
   }
 </style>

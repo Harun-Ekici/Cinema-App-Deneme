@@ -8,13 +8,9 @@ export type Bilet = BiletModel;
 const ANAHTAR = "cineq_biletlerim";
 
 function yukle(): BiletKaydi[] {
-  try {
-    if (typeof localStorage === "undefined") return [];
-    const veri = localStorage.getItem(ANAHTAR);
-    return veri ? JSON.parse(veri) : [];
-  } catch {
-    return [];
-  }
+  if (typeof localStorage === "undefined") return [];
+  const veri = localStorage.getItem(ANAHTAR);
+  return veri ? JSON.parse(veri) as BiletKaydi[] : [];
 }
 
 // Bilet kodu üretici: Tauri Rust komutu veya tarayıcı JS yedeği
@@ -39,6 +35,7 @@ export async function biletKoduAl(salon: string = "Salon 1", seans: string = "21
 
 class Biletlerim {
   liste = $state<BiletKaydi[]>([]);
+  hata = $state<unknown>(null);
 
   constructor() {
     this.yenile();
@@ -46,7 +43,13 @@ class Biletlerim {
 
   yenile() {
     if (typeof window !== "undefined") {
-      this.liste = yukle();
+      try {
+        this.liste = yukle();
+        this.hata = null;
+      } catch (error) {
+        this.liste = [];
+        this.hata = error;
+      }
     }
   }
 

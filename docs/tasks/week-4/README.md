@@ -2,7 +2,7 @@
 
 Hafta 04 görevlerinin ilk bölümü reponuza erken eklendi. Dersi (14.10.2026) beklemeden çalışmaya devam etmek isterseniz bu sırayla ilerleyin; böylece yaptıklarınız sonraki haftaların görevleriyle uyumlu olur.
 
-> **Ön yayındır.** Son tarih, teslim biçimi ve Batch 02 denetimi (Görev 16) derste duyurulacak. Rubriklerdeki puanlar taslaktır; küçük değişiklikler olabilir.
+> **Ön yayındır.** Son tarih ve final teslim biçimi derste duyurulacak. Görev 16 kapsamında Tauri penceresinin asgari boyutları uygulanmış ve [ilerleme kaydına](../../ilerleme-batch-02.md#görev-16--tauri-pencere-boyutları) eklenmiştir. Rubriklerdeki puanlar taslaktır; küçük değişiklikler olabilir.
 
 ## Bu hafta nasıl çalışıyoruz
 
@@ -19,6 +19,7 @@ Kod yazmıyorsunuz. Her görevde yapay zeka aracınıza ne istediğinizi tarif e
 | 13 | Liste ekranı ve üç durum | [13-liste-ve-uc-durum.task.md](13-liste-ve-uc-durum.task.md) |
 | 14 | Detay ekranı ve gezinme | [14-detay-ekrani.task.md](14-detay-ekrani.task.md) |
 | 15 | Rust komutu: tipli sonuç ve hata | [15-rust-komutu.task.md](15-rust-komutu.task.md) |
+| 16 | Tauri penceresi için asgari boyutlar | [Batch 02 ilerleme kaydı](../../ilerleme-batch-02.md#görev-16--tauri-pencere-boyutları) |
 
 ## Kurallar
 

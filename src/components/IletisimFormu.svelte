@@ -70,9 +70,9 @@
     gap: 16px;
   }
   .bildirim-basari {
-    background-color: #10b98120;
-    color: #059669;
-    border: 1px solid #10b981;
+    background-color: var(--zemin);
+    color: var(--renk-vurgu);
+    border: 1px solid var(--renk-vurgu);
     padding: 12px;
     border-radius: var(--radius, 14px);
     font-weight: 500;
@@ -106,7 +106,7 @@
   }
   .gonder-btn {
     background: var(--renk-ana);
-    color: #ffffff;
+    color: var(--zemin);
     border: none;
     padding: 12px;
     border-radius: var(--radius, 14px);

@@ -1,22 +1,91 @@
+use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-// CineQ Bilet Kodu Üretici: CNQ-<salon>-<seans>-<6 haneli rastgele>
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BiletGirdisi {
+    film_adi: String,
+    salon: String,
+    seans: String,
+    adet: i32,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BiletSonucu {
+    pnr_kodu: String,
+    film_adi: String,
+    salon: String,
+    seans: String,
+    adet: i32,
+    dogrulama_ozeti: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(tag = "kod", rename_all = "snake_case")]
+enum BiletHatasi {
+    FilmAdiBos,
+    SalonGecersiz,
+    SeansGecersiz,
+    BiletAdediGecersiz,
+    SistemSaatiGecersiz,
+}
+
 #[tauri::command]
-fn bilet_olustur(salon: Option<String>, seans: Option<String>, etkinlik_id: Option<u32>) -> String {
-    let salon_kodu = salon.unwrap_or_else(|| {
-        etkinlik_id
-            .map(|id| format!("S{}", id))
-            .unwrap_or_else(|| "S1".to_string())
-    });
-    let seans_kodu = seans
-        .map(|s| s.replace(':', ""))
-        .unwrap_or_else(|| "2130".to_string());
-    let zaman = SystemTime::now()
+fn bilet_hesapla(girdi: BiletGirdisi) -> Result<BiletSonucu, BiletHatasi> {
+    let film_adi = girdi.film_adi.trim();
+    if film_adi.is_empty() {
+        return Err(BiletHatasi::FilmAdiBos);
+    }
+
+    let salon = girdi.salon.trim();
+    let salon_kodu: String = salon
+        .chars()
+        .filter(|karakter| karakter.is_ascii_alphanumeric())
+        .map(|karakter| karakter.to_ascii_uppercase())
+        .collect();
+    if salon_kodu.is_empty() {
+        return Err(BiletHatasi::SalonGecersiz);
+    }
+
+    let Some((saat, dakika)) = girdi.seans.split_once(':') else {
+        return Err(BiletHatasi::SeansGecersiz);
+    };
+    let Ok(saat_sayi) = saat.parse::<u8>() else {
+        return Err(BiletHatasi::SeansGecersiz);
+    };
+    let Ok(dakika_sayi) = dakika.parse::<u8>() else {
+        return Err(BiletHatasi::SeansGecersiz);
+    };
+    if saat.len() != 2 || dakika.len() != 2 || saat_sayi > 23 || dakika_sayi > 59 {
+        return Err(BiletHatasi::SeansGecersiz);
+    }
+
+    if girdi.adet <= 0 {
+        return Err(BiletHatasi::BiletAdediGecersiz);
+    }
+
+    let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .map_err(|_| BiletHatasi::SistemSaatiGecersiz)?
         .as_nanos();
-    let rastgele = (zaman % 0xFF_FFFF) as u32;
-    format!("CNQ-{}-{}-{:06X}", salon_kodu, seans_kodu, rastgele)
+    let pnr_kodu = format!(
+        "CNQ-{salon_kodu}-{saat}{dakika}-{:06X}",
+        nanos % 0xFF_FFFF
+    );
+    let dogrulama_ozeti = format!(
+        "Bilet doğrulama hazır: {film_adi} · {}:{dakika} · {} bilet.",
+        saat, girdi.adet
+    );
+
+    Ok(BiletSonucu {
+        pnr_kodu,
+        film_adi: film_adi.to_string(),
+        salon: salon.to_string(),
+        seans: girdi.seans,
+        adet: girdi.adet,
+        dogrulama_ozeti,
+    })
 }
 
 mod backend;
@@ -27,7 +96,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| backend::commands::setup(app))
         .invoke_handler(tauri::generate_handler![
-            bilet_olustur,
+            bilet_hesapla,
             backend::commands::auth_register,
             backend::commands::auth_login,
             backend::commands::auth_logout,
@@ -69,18 +138,58 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{bilet_hesapla, BiletGirdisi, BiletHatasi};
 
     #[test]
-    fn test_bilet_olustur_bicimi() {
-        let kod = bilet_olustur(Some("S3".to_string()), Some("21:30".to_string()), None);
-        assert!(kod.starts_with("CNQ-S3-2130-"));
-        assert_eq!(kod.len(), 18);
+    fn gecerli_girdi_tipli_bilet_sonucu_dondurur() {
+        let sonuc = bilet_hesapla(BiletGirdisi {
+            film_adi: "Yildizlar Arasi".to_string(),
+            salon: "Salon 3".to_string(),
+            seans: "21:30".to_string(),
+            adet: 2,
+        })
+        .expect("gecerli bilet girdisi basarili olmali");
+
+        assert!(sonuc.pnr_kodu.starts_with("CNQ-SALON3-2130-"));
+        assert_eq!(sonuc.film_adi, "Yildizlar Arasi");
+        assert_eq!(sonuc.adet, 2);
+        assert!(sonuc.dogrulama_ozeti.contains("2 bilet"));
     }
 
     #[test]
-    fn test_bilet_olustur_varsayilan() {
-        let kod = bilet_olustur(None, None, None);
-        assert!(kod.starts_with("CNQ-S1-2130-"));
+    fn gecersiz_girdi_anlamli_hata_dondurur() {
+        let sonuc = bilet_hesapla(BiletGirdisi {
+            film_adi: "  ".to_string(),
+            salon: "Salon 1".to_string(),
+            seans: "21:30".to_string(),
+            adet: 1,
+        });
+
+        assert!(matches!(sonuc, Err(BiletHatasi::FilmAdiBos)));
+    }
+
+    #[test]
+    fn sifir_adet_ve_gecersiz_seans_reddedilir() {
+        let sifir_adet = bilet_hesapla(BiletGirdisi {
+            film_adi: "Yildizlar Arasi".to_string(),
+            salon: "Salon 1".to_string(),
+            seans: "21:30".to_string(),
+            adet: 0,
+        });
+        let gecersiz_seans = bilet_hesapla(BiletGirdisi {
+            film_adi: "Yildizlar Arasi".to_string(),
+            salon: "Salon 1".to_string(),
+            seans: "25:99".to_string(),
+            adet: 1,
+        });
+
+        assert!(matches!(
+            sifir_adet,
+            Err(BiletHatasi::BiletAdediGecersiz)
+        ));
+        assert!(matches!(
+            gecersiz_seans,
+            Err(BiletHatasi::SeansGecersiz)
+        ));
     }
 }

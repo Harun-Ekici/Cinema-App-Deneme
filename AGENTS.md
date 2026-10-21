@@ -23,6 +23,9 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
 | [`docs/istemler/14-detay-ekrani.md`](docs/istemler/14-detay-ekrani.md) | Görev 14 Kaydı | Film detay rotası, geri dönüş ve çok dilli doğrulama kanıtları. |
 | [`docs/gelistirme-notlari.md`](docs/gelistirme-notlari.md) | Geliştirme Notları | Geliştirme sırasında liste durumlarını URL parametresiyle sınama adımları. |
 | [`docs/veri-modeli.md`](docs/veri-modeli.md) | Veri Modeli | Film, seans, bilet ve büfe verilerinin alanları ile aralarındaki ilişkiler. |
+| [`docs/komutlar.md`](docs/komutlar.md) | Rust Komutları | Tauri komutlarının girdileri, tipli sonuçları ve hata sözleşmeleri. |
+| [`docs/platform-destegi.md`](docs/platform-destegi.md) | Platform Desteği | CineQ özelliklerinin Web ve Tauri platformlarındaki destek matrisi. |
+| [`docs/istemler/15-rust-komutu.md`](docs/istemler/15-rust-komutu.md) | Görev 15 Kaydı | Tipli Rust bileti komutu, platform köprüsü ve doğrulama kaydı. |
 | [`docs/ilerleme-batch-01.md`](docs/ilerleme-batch-01.md) | Batch 01 kontrol matrisi ve derleme kanıtı |  |
 | [`docs/ajan-uyum-testi.md`](docs/ajan-uyum-testi.md) | Ajan uyum testi kaydı |  |
 
@@ -67,4 +70,5 @@ Her görevde aşağıdaki sırayı uygula:
 - **SSR Güvenliği:** Sayfa bileşenlerinde SSR güvenliği gözetilmeli; doğrudan `window` veya `localStorage` erişimleri istemci tarafında veya korumalı (`typeof window !== 'undefined'`) yapılmalıdır.
 - **DRY Stil Kuralı:** Asla inline hardcoded hex kodları uydurulmaz; daima `docs/branding.md` ve CSS değişkenlerine başvurulur.
 - **Veri Sözleşmesi:** Yeni veri alanı önce `src/lib/types/` içinde tanımlanır, sonra bileşenlerde kullanılır.
+- **Platform Matrisi:** Yeni özellik eklenirken `docs/platform-destegi.md` güncellenir.
 - **Karakter ve Dil Standardı:** Kod tabanında, belgelerde ve commit mesajlarında kesinlikle Çince, Japonca veya alakasız yabancı karakterler kullanılmaz. Yalnızca Türkçe ve İngilizce standart karakterler geçerlidir.

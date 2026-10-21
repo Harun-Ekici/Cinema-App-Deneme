@@ -41,9 +41,14 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
    - Her değişiklikten sonra `bun run build` çalıştırılmalı ve derlemenin 0 hata ile tamamlandığı doğrulanmalıdır.
 3. **Kapsam Koruma (Scope Guard):**
    - Yalnızca görevin gerektirdiği dosyalar düzenlenmelidir. İstenmeyen dosyalarda "temizlik" veya izinsiz büyük refactoring yapılmaz.
+4. **PR Güvenliği ve Dal Koruması:**
+   - `master` dalına doğrudan commit atılamaz. Tüm geliştirmeler PR ile merge edilmelidir.
+   - Dışarıdan veya tanınmayan kişilerden gelen PR'lar yerelde test edilip incelenmeden asla merge edilmez.
+   - Detaylı PR güvenlik prosedürü, inceleme standartları ve merge kısıtları için bkz: [`docs/kurallar.md#pr-güvenliği`](docs/kurallar.md#pr-güvenliği).
 
 ## 4. Kod Yazım Kuralları
 
 - **Svelte 5 Runes:** Bileşenlerde yalnızca Runes (`$state`, `$derived`, `$props`) kullanılır. Eski Svelte 4 sözdizimi (`export let`, `$:`) kullanılmaz.
 - **SSR Güvenliği:** Sayfa bileşenlerinde SSR güvenliği gözetilmeli; doğrudan `window` veya `localStorage` erişimleri istemci tarafında veya korumalı (`typeof window !== 'undefined'`) yapılmalıdır.
 - **DRY Stil Kuralı:** Asla inline hardcoded hex kodları uydurulmaz; daima `docs/branding.md` ve CSS değişkenlerine başvurulur.
+- **Karakter ve Dil Standardı:** Kod tabanında, belgelerde ve commit mesajlarında kesinlikle Çince, Japonca veya alakasız yabancı karakterler kullanılmaz. Yalnızca Türkçe ve İngilizce standart karakterler geçerlidir.

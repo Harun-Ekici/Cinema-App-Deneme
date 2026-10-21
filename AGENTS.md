@@ -27,6 +27,7 @@ Bu belge, bu depoda çalışan tüm yapay zeka asistanları (Antigravity, Cursor
 | [`docs/platform-destegi.md`](docs/platform-destegi.md) | Platform Desteği | CineQ özelliklerinin Web ve Tauri platformlarındaki destek matrisi. |
 | [`docs/istemler/15-rust-komutu.md`](docs/istemler/15-rust-komutu.md) | Görev 15 Kaydı | Tipli Rust bileti komutu, platform köprüsü ve doğrulama kaydı. |
 | [`docs/ilerleme-batch-01.md`](docs/ilerleme-batch-01.md) | Batch 01 kontrol matrisi ve derleme kanıtı |  |
+| [`docs/ilerleme-batch-02.md`](docs/ilerleme-batch-02.md) | Hafta 4, Görev 10–15 ilerleme matrisi ve doğrulama özeti |  |
 | [`docs/ajan-uyum-testi.md`](docs/ajan-uyum-testi.md) | Ajan uyum testi kaydı |  |
 
 ## 2. Çalışma döngüsü

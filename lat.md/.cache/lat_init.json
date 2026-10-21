@@ -1,0 +1,11 @@
+{
+  "init_version": 6,
+  "file_hashes": {
+    "AGENTS.md": "4a2db49e281a7b010b425af36ca84f7c8373b186cb1d347379aa746a2596c3e7",
+    ".claude/skills/lat-md/SKILL.md": "75e94a4ddb6dc51229ea1b24860376952821953d4162669fe5a78815b68a687b",
+    ".github/copilot-instructions.md": "4a2db49e281a7b010b425af36ca84f7c8373b186cb1d347379aa746a2596c3e7",
+    ".agents/skills/lat-md/SKILL.md": "75e94a4ddb6dc51229ea1b24860376952821953d4162669fe5a78815b68a687b",
+    ".opencode/plugins/lat.ts": "4665e384895bb2a54e761fa439ebcd65ac4a4bd761a5ec9b4d8c6364011a73ae",
+    ".codex/skills/lat-md/SKILL.md": "75e94a4ddb6dc51229ea1b24860376952821953d4162669fe5a78815b68a687b"
+  }
+}

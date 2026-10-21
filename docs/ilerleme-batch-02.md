@@ -1,6 +1,6 @@
 # CineQ — Batch 02 İlerleme Matrisi
 
-Hafta 4'teki Görev 10–15 için çalışma, dal/PR, istem günlüğü ve doğrulama özeti. Durum, her görevin istem günlüğündeki kanıtlara ve Git geçmişine göre kaydedilmiştir.
+Hafta 4'teki Görev 10–16 için çalışma, dal/PR, istem günlüğü ve doğrulama özeti. Durum, görev kayıtlarındaki kanıtlara, yapılandırmaya ve Git geçmişine göre kaydedilmiştir.
 
 | Görev | Yapılan çalışma | Dal ve PR | İstem günlüğü | Doğrulama durumu |
 |---|---|---|---|---|
@@ -10,6 +10,7 @@ Hafta 4'teki Görev 10–15 için çalışma, dal/PR, istem günlüğü ve doğr
 | 13 — Liste ve üç durum | Yükleniyor, hata ve boş durum bileşenleri Keşfet/Biletlerim ekranlarına bağlandı; dört dil, URL ile test simülasyonu ve geliştirme notları eklendi. | `feature/13-liste-ve-uc-durum` · [PR #24](https://github.com/Harun-Ekici/Cinema-App-Deneme/pull/24) | [13-liste-ve-uc-durum.md](istemler/13-liste-ve-uc-durum.md) | `bun run check`: 0 hata/uyarı; `bun run build`: 0 hata, 26 sayfa. Dört görünüm, tekrar deneme, filtre temizleme, dört dil ve RTL tarayıcıda doğrulandı; ekran görüntüleri günlükte bağlantılı. |
 | 14 — Detay ekranı | Film detayları için 4 dilde 24 statik rota, bulunamadı görünümü, arama/süzgeç korumalı geri dönüş ve mimari ağaç güncellemesi yapıldı. | `feature/14-detay-ekrani` · [PR #25](https://github.com/Harun-Ekici/Cinema-App-Deneme/pull/25) | [14-detay-ekrani.md](istemler/14-detay-ekrani.md) | `bun run check`: 0 hata/uyarı; `bun run build`: 0 hata, 54 sayfa. Dil rotaları, 404, geri dönüş ve RTL tarayıcıda doğrulandı; ekran görüntüleri günlükte bağlantılı. |
 | 15 — Rust komutu | Tipli `bilet_hesapla` komutu, hata sözleşmesi ve Rust testleri; tek `native.ts` köprüsü, tarayıcı demo yedeği, satın alma sonucu/hata arayüzü ve platform/komut belgeleri eklendi. | `feature/15-rust-komutu` · [PR #26](https://github.com/Harun-Ekici/Cinema-App-Deneme/pull/26) | [15-rust-komutu.md](istemler/15-rust-komutu.md) | `cargo test`: 7 test geçti; `bun run check`: 0 hata/uyarı; `bun run build`: 0 hata, 54 sayfa. Web demo satın alma tarayıcıda doğrulandı. Tauri masaüstü/mobil elle test ve ekran görüntüsü yapılmadı. |
+| 16 — Tauri pencere boyutları | Pencere minimum genişliği 360, yüksekliği 640 yapıldı. | `v0.2.0-batch-02` | — | Tauri yapılandırması ve etiket doğrulandı; güncel build/Lat sonucu aşağıdadır. |
 
 ## Hafta 4 doğrulama özeti
 
@@ -18,3 +19,8 @@ Hafta 4'teki Görev 10–15 için çalışma, dal/PR, istem günlüğü ve doğr
 - Build sonuçları Görev 10–13 için 26, Görev 14–15 için 54 statik sayfa ve 0 hata olarak kaydedilmiştir.
 - Görev 15'in Rust testleri ve web satın alma akışı doğrulanmıştır. Fiziksel masaüstü/mobil Tauri doğrulaması yapılmadığından bu adım tamamlanmış sayılmamıştır.
 - İstem günlüklerinde yer alan görev dışı mevcut `CanliRozet.tsx` React import ipucu, görev doğrulamalarında hata veya uyarı olarak rapor edilmemiştir; check çıktısında bir hint olarak belirtilmiştir.
+- Bu güncellemede `lat check` başarılı olmuş, `bun run build` 54 statik sayfayı 0 hatayla üretmiştir.
+
+## Görev 16 — Tauri Pencere Boyutları
+
+Tauri uygulama penceresi için minimum genişlik 360, minimum yükseklik 640 olarak [`tauri.conf.json`](../src-tauri/tauri.conf.json) içinde tanımlanmıştır. `v0.2.0-batch-02` etiketi depoda mevcuttur. Bu görev tamamlanmıştır; Görev 15'in elle platform doğrulaması ayrı bir açık madde olarak kalır.

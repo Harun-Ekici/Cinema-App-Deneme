@@ -1,8 +1,8 @@
 <script lang="ts">
   // CineQ Keşfet Ekranı — Çift Filtre Barı, Responsive 4 Kademeli Izgara ve Svelte 5 Runes
-  import EtkinlikKart from "$lib/components/EtkinlikKart.svelte";
+  import Kart from "$lib/components/ui/Kart.svelte";
   import { filmler } from "$lib/data";
-  import type { FilmDurum, SalonTipi } from "$lib/types";
+  import type { Film, FilmDurum, KartProps, SalonTipi } from "$lib/types";
 
   // Tab 1: Vizyon Durumu Filtresi
   const durumSekmeleri = ["Tümü", "Vizyondakiler", "Pek Yakında"] as const;
@@ -41,6 +41,16 @@
       return durumUyumu && salonUyumu && aramaUyumu;
     }),
   );
+
+  function filmKartinaDonustur(film: Film): KartProps {
+    return {
+      baslik: film.baslik,
+      altMetin: `${film.tur} · ${film.sure} · IMDb ${film.imdb}`,
+      etiket: film.durum === "vizyonda" ? "Vizyonda" : "Pek Yakında",
+      etiketTuru: film.durum === "vizyonda" ? "basari" : "bilgi",
+      href: `/etkinlik/${film.id}`,
+    };
+  }
 </script>
 
 <div class="sayfa kesfet-sayfa">
@@ -96,7 +106,7 @@
   <!-- Responsive Izgara Sırası: Telefon (1) -> Tablet (2) -> Masaüstü (3) -> Büyük Ekran (4) -->
   <div class="film-izgara">
     {#each filtrelenmisFilmler as film (film.id)}
-      <EtkinlikKart etkinlik={film} />
+      <Kart {...filmKartinaDonustur(film)} />
     {:else}
       <div class="bos-durum">
         <span class="bos-ikon">🎬</span>

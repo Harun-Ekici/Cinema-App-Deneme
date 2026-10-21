@@ -20,6 +20,15 @@
   --basari: #10b981;
   --tehlike: #ef4444;
   --vip-renk: #f59e0b;
+  --kart-etiket-bilgi-zemin: #dbeafe;
+  --kart-etiket-bilgi-yazi: #1e3a8a;
+  --kart-etiket-basari-zemin: #d1fae5;
+  --kart-etiket-basari-yazi: #065f46;
+  --kart-etiket-uyari-zemin: #fef3c7;
+  --kart-etiket-uyari-yazi: #92400e;
+  --kart-etiket-hata-zemin: #fee2e2;
+  --kart-etiket-hata-yazi: #991b1b;
+  --kart-odak-rengi: var(--renk-ana);
 }
 
 /* 2. Sinema Kırmızı-Siyah (Koyu Sinema Deneyimi) */
@@ -42,6 +51,15 @@
   --basari: #10b981;
   --tehlike: #ef4444;
   --vip-renk: #fbbf24;
+  --kart-etiket-bilgi-zemin: #1e3a5f;
+  --kart-etiket-bilgi-yazi: #bfdbfe;
+  --kart-etiket-basari-zemin: #064e3b;
+  --kart-etiket-basari-yazi: #a7f3d0;
+  --kart-etiket-uyari-zemin: #78350f;
+  --kart-etiket-uyari-yazi: #fde68a;
+  --kart-etiket-hata-zemin: #7f1d1d;
+  --kart-etiket-hata-yazi: #fecaca;
+  --kart-odak-rengi: var(--renk-ana);
 }
 
 /* 3. Gece Yarısı (Midnight Navy / Koyu Lacivert) */
@@ -63,6 +81,15 @@
   --basari: #34d399;
   --tehlike: #f87171;
   --vip-renk: #67e8f9;
+  --kart-etiket-bilgi-zemin: #172554;
+  --kart-etiket-bilgi-yazi: #bfdbfe;
+  --kart-etiket-basari-zemin: #064e3b;
+  --kart-etiket-basari-yazi: #a7f3d0;
+  --kart-etiket-uyari-zemin: #78350f;
+  --kart-etiket-uyari-yazi: #fde68a;
+  --kart-etiket-hata-zemin: #7f1d1d;
+  --kart-etiket-hata-yazi: #fecaca;
+  --kart-odak-rengi: var(--renk-ana);
 }
 
 /* 4. Zümrüt (Dark Emerald / Koyu Orman Yeşili) */
@@ -84,6 +111,15 @@
   --basari: #10b981;
   --tehlike: #f87171;
   --vip-renk: #a7f3d0;
+  --kart-etiket-bilgi-zemin: #064e3b;
+  --kart-etiket-bilgi-yazi: #a7f3d0;
+  --kart-etiket-basari-zemin: #064e3b;
+  --kart-etiket-basari-yazi: #a7f3d0;
+  --kart-etiket-uyari-zemin: #78350f;
+  --kart-etiket-uyari-yazi: #fde68a;
+  --kart-etiket-hata-zemin: #7f1d1d;
+  --kart-etiket-hata-yazi: #fecaca;
+  --kart-odak-rengi: var(--renk-ana);
 }
 
 /* Sistem Varsayılanı Koyu Tercihi */
@@ -107,7 +143,42 @@
     --basari: #10b981;
     --tehlike: #ef4444;
     --vip-renk: #fbbf24;
+    --kart-etiket-bilgi-zemin: #1e3a5f;
+    --kart-etiket-bilgi-yazi: #bfdbfe;
+    --kart-etiket-basari-zemin: #064e3b;
+    --kart-etiket-basari-yazi: #a7f3d0;
+    --kart-etiket-uyari-zemin: #78350f;
+    --kart-etiket-uyari-yazi: #fde68a;
+    --kart-etiket-hata-zemin: #7f1d1d;
+    --kart-etiket-hata-yazi: #fecaca;
+    --kart-odak-rengi: var(--renk-ana);
   }
+}
+
+:root {
+  --kart-bosluk: 0.75rem;
+  --kart-ic-bosluk: 1rem;
+  --kart-metin-bosluk: 0.5rem;
+  --kart-kenar-genisligi: 1px;
+  --kart-kenar-stili: solid;
+  --kart-gecis: 180ms ease;
+  --kart-golge-y: 0.5rem;
+  --kart-golge-yayilim: 1.25rem;
+  --kart-hover-yukselme: 0.125rem;
+  --kart-odak-genisligi: 0.1875rem;
+  --kart-odak-araligi: 0.125rem;
+  --kart-gorsel-yukseklik: 12rem;
+  --kart-gorsel-orani: 16 / 9;
+  --kart-gorsel-radius: calc(var(--radius) / 2);
+  --kart-etiket-dikey-bosluk: 0.25rem;
+  --kart-etiket-yatay-bosluk: 0.625rem;
+  --kart-etiket-radius: 999px;
+  --kart-etiket-yazi-boyutu: 0.75rem;
+  --kart-baslik-yazi-boyutu: 1rem;
+  --kart-baslik-satir-sayisi: 2;
+  --kart-alt-metin-yazi-boyutu: 0.875rem;
+  --kart-alt-metin-satir-sayisi: 3;
+  --kart-satir-yuksekligi: 1.4;
 }
 
 * {

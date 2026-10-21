@@ -5,3 +5,4 @@ export * from "./bilet";
 export * from "./bufe";
 export * from "./sepet";
 export * from "./ui";
+export * from "./native";

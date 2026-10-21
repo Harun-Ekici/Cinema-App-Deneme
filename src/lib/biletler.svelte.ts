@@ -1,6 +1,13 @@
 // CineQ Biletlerim Durum Yönetimi (Svelte 5 Runes)
-import { invoke, isTauri } from "@tauri-apps/api/core";
-import type { Bilet as BiletModel, BiletSepetKalemi, BufeSepetKalemi, SepetKalemi } from "./types";
+import { biletHesapla } from "./native";
+import type {
+  Bilet as BiletModel,
+  BiletSepetKalemi,
+  BufeSepetKalemi,
+  BiletSonucu,
+  NativeHatasi,
+  SepetKalemi,
+} from "./types";
 
 export type BiletKaydi = BiletModel;
 export type Bilet = BiletModel;
@@ -13,25 +20,9 @@ function yukle(): BiletKaydi[] {
   return veri ? JSON.parse(veri) as BiletKaydi[] : [];
 }
 
-// Bilet kodu üretici: Tauri Rust komutu veya tarayıcı JS yedeği
-export async function biletKoduAl(salon: string = "Salon 1", seans: string = "21:30"): Promise<string> {
-  const salonKisa = salon.match(/Salon\s*(\d+)/i)?.[1] ? `S${salon.match(/Salon\s*(\d+)/i)![1]}` : "S1";
-  const seansKisa = seans.replace(":", "");
-
-  if (typeof window !== "undefined" && isTauri()) {
-    try {
-      return await invoke<string>("bilet_olustur", { salon: salonKisa, seans: seansKisa });
-    } catch {
-      // Rust çağrısı başarısız olursa tarayıcı yedeğine dön
-    }
-  }
-
-  const rastgele = Math.floor(Math.random() * 0xffffff)
-    .toString(16)
-    .toUpperCase()
-    .padStart(6, "0");
-  return `CNQ-${salonKisa}-${seansKisa}-${rastgele}`;
-}
+export type SatinAlSonucu =
+  | { ok: true; sonuclar: BiletSonucu[] }
+  | { ok: false; hata: NativeHatasi };
 
 class Biletlerim {
   liste = $state<BiletKaydi[]>([]);
@@ -57,7 +48,7 @@ class Biletlerim {
     biletKalemleri: BiletSepetKalemi[] | SepetKalemi[],
     bufeKalemleri: BufeSepetKalemi[] = [],
     indirimBilgi?: string,
-  ) {
+  ): Promise<SatinAlSonucu> {
     const biletler: BiletSepetKalemi[] = [];
     const bufeler: BufeSepetKalemi[] = [...bufeKalemleri];
 
@@ -73,10 +64,20 @@ class Biletlerim {
       ? bufeler.map((b) => `${b.adet}x ${b.urun.ad}${b.porsiyonAdi ? ` (${b.porsiyonAdi})` : ""}`).join(", ")
       : undefined;
 
+    const olusturulanBiletler: BiletKaydi[] = [];
+    const sonuclar: BiletSonucu[] = [];
     for (const b of biletler) {
-      const kod = await biletKoduAl(b.salon, b.seans);
-      this.liste.unshift({
-        kod,
+      const komut = await biletHesapla({
+        filmAdi: b.film.baslik,
+        salon: b.salon,
+        seans: b.seans,
+        adet: b.adet,
+      });
+      if (!komut.ok) return komut;
+
+      sonuclar.push(komut.sonuc);
+      olusturulanBiletler.push({
+        kod: komut.sonuc.pnrKodu,
         baslik: b.film.baslik,
         tarih: new Date().toISOString(),
         seans: b.seans,
@@ -93,9 +94,12 @@ class Biletlerim {
       });
     }
 
+    const yeniListe = [...olusturulanBiletler, ...this.liste];
     if (typeof localStorage !== "undefined") {
-      localStorage.setItem(ANAHTAR, JSON.stringify(this.liste));
+      localStorage.setItem(ANAHTAR, JSON.stringify(yeniListe));
     }
+    this.liste = yeniListe;
+    return { ok: true, sonuclar };
   }
 }
 

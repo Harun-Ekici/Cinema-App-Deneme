@@ -4,6 +4,9 @@
   import { tl } from "$lib/data";
   import { sepet } from "$lib/sepet.svelte";
   import { biletlerim } from "$lib/biletler.svelte";
+  import { destekleniyorMu } from "$lib/native";
+  import HataDurumu from "$lib/components/ui/HataDurumu.svelte";
+  import type { BiletSonucu, NativeHatasi } from "$lib/types";
 
   onMount(() => {
     sepet.yenile();
@@ -13,6 +16,9 @@
   let promoGirdi = $state("");
   let promoHata = $state("");
   let odemeYontemi = $state<"kart" | "hizli">("kart");
+  let satinAlHatasi = $state("");
+  let satinAlTamamlandi = $state(false);
+  let satinAlSonuclari = $state<BiletSonucu[]>([]);
 
   // Sahte Kart Bilgileri
   let kartSahibi = $state("Harun Ekici");
@@ -32,8 +38,9 @@
   }
 
   async function odemeTamamla() {
-    if (sepet.kalemler.length === 0) return;
+    if (isleniyor || sepet.kalemler.length === 0) return;
     isleniyor = true;
+    satinAlHatasi = "";
     try {
       // 1 saniyelik ödeme simülasyon gecikmesi
       await new Promise((r) => setTimeout(r, 1000));
@@ -42,15 +49,36 @@
         ? `${sepet.indirimKodu} (%${Math.round(sepet.indirimOrani * 100)} İndirim)`
         : undefined;
 
-      await biletlerim.satinAl(sepet.biletler, sepet.bufeKalemleri, indirimMetni);
-      sepet.temizle();
-
-      if (typeof window !== "undefined") {
-        window.location.href = "/biletlerim";
+      const sonuc = await biletlerim.satinAl(sepet.biletler, sepet.bufeKalemleri, indirimMetni);
+      if (!sonuc.ok) {
+        satinAlHatasi = biletHatasiMetni(sonuc.hata);
+        return;
       }
+
+      sepet.temizle();
+      satinAlSonuclari = sonuc.sonuclar;
+      satinAlTamamlandi = true;
+    } catch {
+      satinAlHatasi = "Satın alma tamamlanamadı. Lütfen tekrar deneyin.";
     } finally {
       isleniyor = false;
     }
+  }
+
+  function biletHatasiMetni(hata: NativeHatasi): string {
+    const mesajlar: Record<NativeHatasi["kod"], string> = {
+      film_adi_bos: "Film adı boş olamaz.",
+      salon_gecersiz: "Seçilen salon bilgisi geçersiz.",
+      seans_gecersiz: "Seçilen seans saati geçersiz.",
+      bilet_adedi_gecersiz: "Bilet adedi en az bir olmalıdır.",
+      sistem_saati_gecersiz: "Bilet kodu şu anda üretilemiyor.",
+      komut_basarisiz: "Bilet kodu üretilemedi. Lütfen tekrar deneyin.",
+    };
+    return mesajlar[hata.kod];
+  }
+
+  function biletlerimeGit() {
+    if (typeof window !== "undefined") window.location.href = "/biletlerim";
   }
 </script>
 
@@ -62,7 +90,22 @@
     {/if}
   </div>
 
-  {#if sepet.biletler.length === 0 && sepet.bufeKalemleri.length === 0}
+  {#if satinAlTamamlandi}
+    <div class="kart satin-alma-sonucu" role="status">
+      <h2>Satın alma tamamlandı</h2>
+      {#each satinAlSonuclari as sonuc (sonuc.pnrKodu)}
+        <p>{sonuc.dogrulamaOzeti}</p>
+        <strong>PNR: {sonuc.pnrKodu}</strong>
+      {/each}
+      <button class="btn odeme-btn" type="button" onclick={biletlerimeGit}>Biletlerime Git</button>
+    </div>
+  {:else if satinAlHatasi}
+    <HataDurumu
+      mesaj={satinAlHatasi}
+      dugmeMetni="Tekrar Dene"
+      tekrarDene={odemeTamamla}
+    />
+  {:else if sepet.biletler.length === 0 && sepet.bufeKalemleri.length === 0}
     <div class="kart bos-sepet">
       <span class="bos-ikon">🛒</span>
       <p class="bos-mesaj">Sepetinizde henüz bilet veya büfe siparişi bulunmuyor.</p>
@@ -226,13 +269,15 @@
         <strong class="buyuk-fiyat">{tl(sepet.toplam)}</strong>
       </div>
 
-      <button class="btn odeme-btn" onclick={odemeTamamla} disabled={isleniyor}>
-        {#if isleniyor}
-          <span>⏳ Güvenli Ödeme İşleniyor...</span>
-        {:else}
-          <span>{tl(sepet.toplam)} · Rezervasyonu ve Ödemeyi Tamamla</span>
-        {/if}
-      </button>
+      {#if destekleniyorMu("bilet_kodu_uret")}
+        <button class="btn odeme-btn" onclick={odemeTamamla} disabled={isleniyor}>
+          {#if isleniyor}
+            <span>⏳ Güvenli Ödeme İşleniyor...</span>
+          {:else}
+            <span>{tl(sepet.toplam)} · Rezervasyonu ve Ödemeyi Tamamla</span>
+          {/if}
+        </button>
+      {/if}
     </div>
   {/if}
 </div>

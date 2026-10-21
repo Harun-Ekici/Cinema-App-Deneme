@@ -1,10 +1,26 @@
 <script lang="ts">
   // CineQ Film Detay Ekranı — Dinamik VIP Koltuk Fiyatlandırması, Yaş/Ses Rozetleri, Porsiyonlu Büfe (Svelte 5 Runes)
+  import { onMount } from "svelte";
   import { bufeUrunleri, tl } from "$lib/data";
   import type { BufePorsiyon, BufeUrunu, Film } from "$lib/types";
   import { sepet } from "$lib/sepet.svelte";
+  import { filmDetayMetinleri } from "$lib/i18n/film-detay";
+  import type { UygulamaDili } from "$lib/i18n/liste-durumlari";
 
-  let { etkinlik: e }: { etkinlik: Film } = $props();
+  let { etkinlik: e, lang = "tr" }: { etkinlik: Film; lang?: UygulamaDili } = $props();
+  let filtreQuery = $state("");
+  let metin = $derived(filmDetayMetinleri[lang]);
+  let geriDonUrl = $derived(`${lang === "tr" ? "" : `/${lang}`}/${filtreQuery ? `?${filtreQuery}` : ""}`);
+
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const listeParametreleri = new URLSearchParams();
+    for (const anahtar of ["ara", "vizyon", "salon"]) {
+      const deger = params.get(anahtar);
+      if (deger) listeParametreleri.set(anahtar, deger);
+    }
+    filtreQuery = listeParametreleri.toString();
+  });
 
   // Seçili Seans
   let seciliSeans = $state("");
@@ -32,7 +48,7 @@
       seciliKoltuklar = seciliKoltuklar.filter((k) => k !== kod);
     } else {
       if (seciliKoltuklar.length >= 6) {
-        alert("Tek seferde en fazla 6 koltuk seçebilirsiniz.");
+        alert(metin.maxKoltukUyarisi);
         return;
       }
       seciliKoltuklar = [...seciliKoltuklar, kod];
@@ -100,7 +116,7 @@
 
   function sepeteEkleVeGit() {
     if (seciliKoltuklar.length === 0) {
-      alert("Lütfen en az 1 koltuk seçin.");
+      alert(metin.enAzBirKoltukUyarisi);
       return;
     }
 
@@ -133,10 +149,11 @@
 </script>
 
 <div class="detay-kapsayici">
+  <a class="geri-don" href={geriDonUrl}>← {metin.geriDon}</a>
   <!-- Üst Afiş Alanı -->
   <div class="afis" style:background={e.renk}>
     <div class="etiketler">
-      <span class="rozet durum">{e.durum === "vizyonda" ? "Vizyonda" : "Pek Yakında"}</span>
+      <span class="rozet durum">{e.durum === "vizyonda" ? metin.vizyonda : metin.yakinda}</span>
       <span class="rozet salon">{e.salonTipi}</span>
       <span class="rozet imdb">★ {e.imdb}</span>
       <span class="rozet yas">{e.yasSiniri}</span>
@@ -151,17 +168,17 @@
   <div class="sayfa icerik-alani">
     <!-- Film Künyesi & Sinopsis -->
     <div class="kart bilgi-karti">
-      <h3>Sinopsis</h3>
+      <h3>{metin.sinopsis}</h3>
       <p class="aciklama">{e.aciklama}</p>
       <div class="kunye">
-        <p><strong>Yönetmen:</strong> {e.yonetmen}</p>
-        <p><strong>Oyuncular:</strong> {e.oyuncular.join(", ")}</p>
+        <p><strong>{metin.yonetmen}:</strong> {e.yonetmen}</p>
+        <p><strong>{metin.oyuncular}:</strong> {e.oyuncular.join(", ")}</p>
       </div>
     </div>
 
     <!-- Seans Saati Seçimi -->
     <div class="bolum">
-      <h2>1. Seans Saati Seçin</h2>
+      <h2>{metin.seansSec}</h2>
       <div class="seans-secenekleri">
         {#each e.seanslar as s}
           <button
@@ -178,7 +195,7 @@
 
     <!-- Bilet Tipi Seçimi -->
     <div class="bolum">
-      <h2>2. Bilet Kategorisi</h2>
+      <h2>{metin.biletKategorisi}</h2>
       <div class="bilet-secenekleri">
         {#each e.biletler as b, i}
           <label class="kart bilet-karti" class:aktif={seciliBiletIndex === i}>
@@ -193,7 +210,7 @@
     <!-- İnteraktif Koltuk Seçim Matrisi -->
     <div class="bolum">
       <div class="bolum-baslik-satir">
-        <h2>3. Koltuk Seçin ({seciliKoltuklar.length} seçildi)</h2>
+        <h2>{metin.koltukSec(seciliKoltuklar.length)}</h2>
         {#if vipKoltukSayisi > 0}
           <span class="vip-bilgi-etiket">✨ {vipKoltukSayisi}x VIP (+{tl(vipKoltukSayisi * VIP_EK_UCRET)})</span>
         {/if}
@@ -202,7 +219,7 @@
       <div class="kart salon-plani">
         <div class="perde">
           <div class="perde-cizgi"></div>
-          <span>PERDE / SCREEN</span>
+          <span>{metin.perde}</span>
         </div>
 
         <div class="koltuk-matrisi">
@@ -223,7 +240,11 @@
                     class:vip
                     disabled={dolu}
                     onclick={() => koltukTikla(kod)}
-                    aria-label={`Koltuk ${kod} ${dolu ? "Dolu" : secili ? "Seçili" : "Boş"} ${vip ? "VIP" : "Standart"}`}
+                    aria-label={metin.koltukAria(
+                      kod,
+                      dolu ? metin.dolu : secili ? metin.secili : metin.bos,
+                      vip ? metin.vip : metin.standart,
+                    )}
                   >
                     {kod}
                   </button>
@@ -234,17 +255,17 @@
         </div>
 
         <div class="koltuk-lejant">
-          <div class="lejant-oge"><span class="kutu bos"></span> Boş</div>
-          <div class="lejant-oge"><span class="kutu secili"></span> Seçili</div>
-          <div class="lejant-oge"><span class="kutu dolu"></span> Dolu</div>
-          <div class="lejant-oge"><span class="kutu vip"></span> VIP Sıra (+50 TL)</div>
+          <div class="lejant-oge"><span class="kutu bos"></span> {metin.bos}</div>
+          <div class="lejant-oge"><span class="kutu secili"></span> {metin.secili}</div>
+          <div class="lejant-oge"><span class="kutu dolu"></span> {metin.dolu}</div>
+          <div class="lejant-oge"><span class="kutu vip"></span> {metin.vipSira} (+50 TL)</div>
         </div>
       </div>
     </div>
 
     <!-- Büfe Menüsü Entegrasyonu (Porsiyonlu) -->
     <div class="bolum">
-      <h2>4. Sinema Büfesi Ekle (Opsiyonel)</h2>
+      <h2>{metin.bufeyeEkle}</h2>
       <div class="bufe-listesi">
         {#each bufeUrunleri as u}
           {@const secim = bufeSecimleri[u.id] ?? { porsiyonIndex: 0, adet: 0 }}
@@ -283,7 +304,7 @@
                 class="sayac-btn"
                 onclick={() => bufeAzalt(u)}
                 disabled={secim.adet <= 0}
-                aria-label="Azalt"
+                aria-label={metin.azalt}
               >
                 −
               </button>
@@ -292,7 +313,7 @@
                 type="button"
                 class="sayac-btn"
                 onclick={() => bufeArtir(u)}
-                aria-label="Artır"
+                aria-label={metin.artir}
               >
                 +
               </button>
@@ -305,28 +326,28 @@
     <!-- Sipariş Özeti & Sepete Ekle -->
     <div class="kart siparis-ozet-karti">
       <div class="ozet-satir">
-        <span>Bilet ({seciliKoltuklar.length} adet: {seciliKoltuklar.join(", ")})</span>
+        <span>{metin.biletOzeti(seciliKoltuklar.length, seciliKoltuklar.join(", "))}</span>
         <b>{tl(biletToplam)}</b>
       </div>
       {#if vipKoltukSayisi > 0}
         <div class="ozet-satir alt-detay">
-          <span>↳ Standart ({standartKoltukSayisi}) + VIP ({vipKoltukSayisi}x +{tl(VIP_EK_UCRET)})</span>
-          <span>Dinamik Fiyat</span>
+          <span>{metin.standartVipOzeti(standartKoltukSayisi, vipKoltukSayisi, tl(VIP_EK_UCRET))}</span>
+          <span>{metin.dinamikFiyat}</span>
         </div>
       {/if}
       {#if bufeToplam > 0}
         <div class="ozet-satir">
-          <span>Büfe Siparişleri</span>
+          <span>{metin.bufeSiparisleri}</span>
           <b>{tl(bufeToplam)}</b>
         </div>
       {/if}
       <div class="ozet-satir toplam-vurgu">
-        <span>Genel Toplam</span>
+        <span>{metin.genelToplam}</span>
         <span class="toplam-rakam">{tl(genelToplam)}</span>
       </div>
 
       <button class="btn satin-al-btn" onclick={sepeteEkleVeGit}>
-        Sepete Ekle & İlerle · {tl(genelToplam)}
+        {metin.sepeteEkle} · {tl(genelToplam)}
       </button>
     </div>
   </div>
@@ -337,6 +358,24 @@
     max-width: 1000px;
     margin-inline: auto;
     width: 100%;
+  }
+
+  .geri-don {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--durum-oge-araligi);
+    margin: var(--durum-aralik) 18px 0;
+    padding: var(--durum-dugme-dikey-bosluk) var(--durum-dugme-yatay-bosluk);
+    border: var(--kart-kenar-genisligi) solid var(--kenar);
+    border-radius: var(--kart-etiket-radius);
+    background: var(--kart);
+    color: var(--yazi);
+    font-weight: 600;
+  }
+
+  .geri-don:focus-visible {
+    outline: var(--kart-odak-genisligi) solid var(--kart-odak-rengi);
+    outline-offset: var(--kart-odak-araligi);
   }
 
   .afis {

@@ -19,10 +19,19 @@
   let listeDurumu = $state<ListeDurumu>("yukleniyor");
   let yuklenenFilmler = $state<Film[]>([]);
   let dil = $state<UygulamaDili>("tr");
+  let filtreUrlHazir = $state(false);
   let metin = $derived(listeDurumMetinleri[dil]);
 
   onMount(() => {
     dil = uygulamaDiliniAl();
+    const params = new URLSearchParams(window.location.search);
+    arama = params.get("ara") ?? "";
+    const vizyonDurumu = params.get("vizyon");
+    if (vizyonDurumu === "vizyondakiler") seciliDurum = "Vizyondakiler";
+    if (vizyonDurumu === "pek-yakinda") seciliDurum = "Pek Yakında";
+    const salon = params.get("salon");
+    if (salonSekmeleri.includes(salon as SalonSekme)) seciliSalon = salon as SalonSekme;
+    filtreUrlHazir = true;
     void filmleriYukle();
   });
 
@@ -63,6 +72,23 @@
   // Canlı Metin Arama
   let arama = $state("");
 
+  $effect(() => {
+    if (!filtreUrlHazir || typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    for (const anahtar of ["ara", "vizyon", "salon"]) url.searchParams.delete(anahtar);
+    if (arama.trim()) url.searchParams.set("ara", arama.trim());
+    if (seciliDurum === "Vizyondakiler") url.searchParams.set("vizyon", "vizyondakiler");
+    if (seciliDurum === "Pek Yakında") url.searchParams.set("vizyon", "pek-yakinda");
+    if (seciliSalon !== "Tümü") url.searchParams.set("salon", seciliSalon);
+
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+  });
+
   // $derived: Tüm filtreler reaktif olarak tek hamlede hesaplanır
   const filtrelenmisFilmler = $derived(
     yuklenenFilmler.filter((film) => {
@@ -96,12 +122,20 @@
   );
 
   function filmKartinaDonustur(film: Film): KartProps {
+    const params = new URLSearchParams();
+    if (arama.trim()) params.set("ara", arama.trim());
+    if (seciliDurum === "Vizyondakiler") params.set("vizyon", "vizyondakiler");
+    if (seciliDurum === "Pek Yakında") params.set("vizyon", "pek-yakinda");
+    if (seciliSalon !== "Tümü") params.set("salon", seciliSalon);
+    const localeOneki = dil === "tr" ? "" : `/${dil}`;
+    const query = params.toString();
+
     return {
       baslik: film.baslik,
       altMetin: `${film.tur} · ${film.sure} · IMDb ${film.imdb}`,
       etiket: film.durum === "vizyonda" ? "Vizyonda" : "Pek Yakında",
       etiketTuru: film.durum === "vizyonda" ? "basari" : "bilgi",
-      href: `/etkinlik/${film.id}`,
+      href: `${localeOneki}/film/${film.id}${query ? `?${query}` : ""}`,
     };
   }
 

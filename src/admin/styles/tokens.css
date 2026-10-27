@@ -1,0 +1,55 @@
+:root {
+  --renk-ana: #e11d48;
+  --renk-vurgu: #d97706;
+  --renk-koyu: #0f172a;
+  --zemin: #f8fafc;
+  --kart: #ffffff;
+  --yazi: #0f172a;
+  --yazi-soluk: #64748b;
+  --kenar: #e2e8f0;
+  --radius: 14px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --admin-icon-size-sm: 16px;
+  --admin-icon-size-md: 20px;
+  --admin-icon-size-lg: 24px;
+  --admin-icon-size-xl: 32px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sidebar-yazi: #f8fafc;
+  --sidebar-yazi-soluk: #94a3b8;
+  --sidebar-yazi-soft: #cbd5e1;
+  --on-brand: #ffffff;
+  --durum-basarili: #15803d;
+  --durum-basarili-zemin: #dcfce7;
+  --durum-uyari: #92400e;
+  --durum-uyari-zemin: #fef3c7;
+  --durum-hata: #991b1b;
+  --durum-hata-zemin: #fee2e2;
+  --durum-bilgi: #1d4ed8;
+  --durum-bilgi-zemin: #dbeafe;
+}
+
+:root[data-tema="gece"] {
+  --renk-ana: #f43f5e;
+  --renk-vurgu: #f59e0b;
+  --renk-koyu: #020617;
+  --zemin: #0b0f19;
+  --kart: #151c2e;
+  --yazi: #f8fafc;
+  --yazi-soluk: #94a3b8;
+  --kenar: #1e293b;
+  --durum-basarili: #4ade80;
+  --durum-basarili-zemin: #052e16;
+  --durum-uyari: #fcd34d;
+  --durum-uyari-zemin: #451a03;
+  --durum-hata: #fca5a5;
+  --durum-hata-zemin: #450a0a;
+  --durum-bilgi: #93c5fd;
+  --durum-bilgi-zemin: #172554;
+}

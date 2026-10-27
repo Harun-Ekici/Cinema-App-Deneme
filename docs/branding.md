@@ -52,7 +52,7 @@ Aşağıdaki renk token'ları `src/styles/app.css` içerisindeki `:root` ve `:ro
 
 | Dosya | Kullanım |
 |---|---|
-| `public/cineq-logo.svg` | Ana logo: lacivert zemin (`--renk-koyu`), kırmızı Q halkası (`--renk-ana`), beyaz oynat üçgeni. Üst barda ve tarayıcı simgesinde kullanılır |
+| `public/cineq-logo.svg` | Ana logo: lacivert zemin (`--renk-koyu`), kırmızı Q halkası (`--renk-ana`), beyaz oynat üçgeni. Müşteri üst barında, yönetim paneli kenar çubuğunda ve tarayıcı simgesinde kullanılır |
 | `public/favicon.png`, `public/apple-touch-icon.png` | Logodan üretilen 128 px ve 180 px simgeler |
 | `src-tauri/icons/` | `bun run tauri icon` ile logodan üretilen macOS, Windows, Linux, iOS ve Android ikon setleri |
 

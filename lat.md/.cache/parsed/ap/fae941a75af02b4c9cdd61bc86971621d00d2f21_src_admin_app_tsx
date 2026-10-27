@@ -1,0 +1,2 @@
+v6:e79300db656151c882708b385937f24dcd4538bc
+{"path":"src/admin/App.tsx","symbols":[{"name":"AdminRoutes","kind":"function","startLine":17,"endLine":43,"signature":"function AdminRoutes() {\r"},{"name":"App","kind":"function","startLine":45,"endLine":53,"signature":"function App() {\r"}],"timings":{"readMs":0.11359999999999104,"hashMs":0.022899999999992815,"cacheReadMs":0.11809999999999832,"cacheStatus":"miss","cacheWriteMs":0,"parseMs":32.13050000000001}}

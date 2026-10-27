@@ -73,6 +73,7 @@ fn row_to_user(r: &rusqlite::Row<'_>) -> rusqlite::Result<User> {
 }
 
 const USER_COLS: &str = "id, name, email, status, last_login_at, created_at";
+pub const OWNER_EMAIL: &str = "harunekici@gmail.com";
 
 pub fn user_by_id(conn: &Connection, id: i64) -> AppResult<User> {
     conn.query_row(&format!("SELECT {USER_COLS} FROM users WHERE id = ?1"), [id], row_to_user)
@@ -129,6 +130,51 @@ pub fn attempt(conn: &Connection, email: &str, password: &str) -> AppResult<User
     }
     conn.execute(&format!("UPDATE users SET last_login_at = {NOW_SQL} WHERE id = ?1"), [id])?;
     user_by_id(conn, id)
+}
+
+pub fn owner_password_setup_required(conn: &Connection) -> AppResult<bool> {
+    Ok(conn.query_row(
+        "SELECT EXISTS(
+            SELECT 1 FROM users u
+            JOIN model_has_roles mr ON mr.model_id = u.id AND mr.model_type = 'User'
+            JOIN roles r ON r.id = mr.role_id
+            WHERE u.email = ?1 AND u.status = 'active' AND u.password = ''
+              AND r.name = 'owner' AND r.guard_name = 'web'
+        )",
+        [OWNER_EMAIL],
+        |row| row.get(0),
+    )?)
+}
+
+pub fn set_owner_initial_password(conn: &mut Connection, password: &str) -> AppResult<User> {
+    validate(None, OWNER_EMAIL, Some(password))?;
+    let password_hash = hash_password(password)?;
+    let tx = conn.transaction()?;
+    let is_pending: bool = tx.query_row(
+        "SELECT EXISTS(
+            SELECT 1 FROM users u
+            JOIN model_has_roles mr ON mr.model_id = u.id AND mr.model_type = 'User'
+            JOIN roles r ON r.id = mr.role_id
+            WHERE u.email = ?1 AND u.status = 'active' AND u.password = ''
+              AND r.name = 'owner' AND r.guard_name = 'web'
+        )",
+        [OWNER_EMAIL],
+        |row| row.get(0),
+    )?;
+    if !is_pending {
+        return Err(AppError::Conflict("Owner ilk parola kurulumu tamamlanmış veya kullanılamıyor.".into()));
+    }
+
+    let changed = tx.execute(
+        &format!("UPDATE users SET password = ?1, updated_at = {NOW_SQL} WHERE email = ?2 AND status = 'active' AND password = ''"),
+        params![password_hash, OWNER_EMAIL],
+    )?;
+    if changed != 1 {
+        return Err(AppError::Conflict("Owner parolası başka bir işlemde ayarlanmış.".into()));
+    }
+    let user_id: i64 = tx.query_row("SELECT id FROM users WHERE email = ?1", [OWNER_EMAIL], |row| row.get(0))?;
+    tx.commit()?;
+    user_by_id(conn, user_id)
 }
 
 /// Komut satırı yönetici aracının karşılığı (`qtoefl:admin`): kullanıcıyı oluşturur ya da günceller, rol atar.
@@ -218,6 +264,39 @@ pub fn set_status(conn: &Connection, id: i64, status: &str) -> AppResult<User> {
 mod tests {
     use super::*;
 
+    fn owner_setup_db() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE users (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                status TEXT NOT NULL,
+                last_login_at TEXT,
+                created_at TEXT,
+                updated_at TEXT
+            );
+            CREATE TABLE roles (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                guard_name TEXT NOT NULL
+            );
+            CREATE TABLE model_has_roles (
+                role_id INTEGER NOT NULL,
+                model_type TEXT NOT NULL,
+                model_id INTEGER NOT NULL
+            );
+            INSERT INTO users (id, name, email, password, status, created_at)
+            VALUES (1, 'Harun Ekici', 'harunekici@gmail.com', '', 'active', 'now');
+            INSERT INTO roles (id, name, guard_name) VALUES (1, 'owner', 'web');
+            INSERT INTO model_has_roles (role_id, model_type, model_id)
+            VALUES (1, 'User', 1);",
+        )
+        .unwrap();
+        conn
+    }
+
     #[test]
     fn email_checks() {
         assert!(valid_email("ad@ornek.com"));
@@ -231,5 +310,32 @@ mod tests {
         let h = hash_password("gizli-parola").unwrap();
         assert!(verify_password("gizli-parola", &h));
         assert!(!verify_password("yanlis", &h));
+    }
+
+    #[test]
+    fn owner_initial_password_is_single_use_and_logs_in() {
+        let mut conn = owner_setup_db();
+        assert!(owner_password_setup_required(&conn).unwrap());
+
+        let user = set_owner_initial_password(&mut conn, "harun-parola-123").unwrap();
+        assert_eq!(user.email, OWNER_EMAIL);
+        assert!(!owner_password_setup_required(&conn).unwrap());
+        assert!(attempt(&conn, OWNER_EMAIL, "harun-parola-123").is_ok());
+        assert!(matches!(
+            set_owner_initial_password(&mut conn, "farkli-parola-123"),
+            Err(AppError::Conflict(_))
+        ));
+    }
+
+    #[test]
+    fn owner_initial_password_requires_active_owner_record() {
+        let mut conn = owner_setup_db();
+        conn.execute("UPDATE users SET status = 'suspended'", []).unwrap();
+
+        assert!(!owner_password_setup_required(&conn).unwrap());
+        assert!(matches!(
+            set_owner_initial_password(&mut conn, "harun-parola-123"),
+            Err(AppError::Conflict(_))
+        ));
     }
 }

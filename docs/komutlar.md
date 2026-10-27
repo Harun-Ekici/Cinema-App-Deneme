@@ -1,5 +1,24 @@
 # Rust komutlari
 
+## Owner kimlik dogrulama komutlari
+
+Seed edilmis owner hesabi uygulama acilisinda otomatik oturum almaz. Ilk parola yalniz kurulum bekleyen etkin owner kaydi icin bir kez belirlenir ve Rust tarafinda Argon2id ozeti olarak saklanir.
+
+| Komut | Parametreler | Donus |
+|---|---|---|
+| `auth_owner_setup_required` | — | Ilk owner parolasinin beklenip beklenmedigini bildiren boolean |
+| `auth_owner_set_initial_password` | `password` | Parolayi bir kez belirler ve owner kullanicisinin rollerini/izinlerini iceren oturumu dondurur |
+
+## `vitrin_katalog`
+
+Müşteri vitrini için gizli müşteri/sipariş alanlarını dışarı vermeden SQLite film kataloğunu ve gelecek seanslarının salon bilgilerini okur. Yönetici CRUD izni veya oturumu gerektirmez.
+
+### Başarılı dönüş
+
+`films` listesi her yayınlanabilir filmi içerir; seansı olmayan filmlerin `seanslar` listesi boştur. Seans kayıtları kimlik, başlangıç, dil, standart/VIP fiyatı, salon kimliği, koltuk haritası ve dolu ya da süresi dolmamış tutulmuş koltuk koordinatlarını taşır.
+
+Tauri komutu `src/lib/katalog.ts` içindeki `vitrinFilmleriniYukle` tarafından çağrılır. Tarayıcıda katalog taklidi yapılmaz; adaptör desteklenmediğini açık hata olarak bildirir.
+
 ## `bilet_hesapla`
 
 Sinema bileti icin PNR kodu ve dogrulama ozeti uretir. Tauri komutu yalnizca `src/lib/native.ts` icinden cagirilir.

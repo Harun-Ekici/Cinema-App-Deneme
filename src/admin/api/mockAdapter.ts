@@ -87,6 +87,7 @@ export const mockAdapter: MockAdapter = {
       campaigns: readCollection("campaigns"),
       contactMessages: readCollection("contactMessages"),
       admins: readCollection("admins"),
+      authSessions: readCollection("authSessions"),
       auditLogs: readCollection("auditLogs"),
     })),
   list: (collection) => runRequest(() => readCollection(collection)),
@@ -109,6 +110,7 @@ export const mockAdapter: MockAdapter = {
         "campaigns",
         "contactMessages",
         "admins",
+        "authSessions",
         "auditLogs",
       ];
       for (const collection of collections) {

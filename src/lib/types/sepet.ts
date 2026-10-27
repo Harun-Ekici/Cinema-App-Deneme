@@ -7,6 +7,7 @@ export interface BiletSepetKalemi {
   film: Film; // Bilet kaleminin bağlı olduğu film.
   bilet: BiletKategorisi; // Seçilen bilet türü ve fiyatı.
   seans: string; // Seçilen gösterim saati.
+  seansId?: string; // SQLite kaynaklı seans kimliği.
   salon: string; // Seçilen gösterim salonu.
   koltuklar: string[]; // Sepet kaleminde seçilen koltuk kodları.
   adet: number; // Bu kalemdeki bilet adedi.

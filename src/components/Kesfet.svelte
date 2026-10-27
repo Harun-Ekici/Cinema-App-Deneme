@@ -5,7 +5,7 @@
   import BosDurum from "$lib/components/ui/BosDurum.svelte";
   import HataDurumu from "$lib/components/ui/HataDurumu.svelte";
   import Yukleniyor from "$lib/components/ui/Yukleniyor.svelte";
-  import { filmler } from "$lib/data";
+  import { vitrinFilmleriniYukle } from "$lib/katalog";
   import type { Film, KartProps } from "$lib/types";
   import {
     gelistirmeDurumunuAl,
@@ -39,13 +39,12 @@
     listeDurumu = "yukleniyor";
 
     try {
-      await Promise.resolve();
       const testDurumu = gelistirmeDurumunuAl();
 
       if (testDurumu === "yukleniyor") return;
       if (testDurumu === "hata") throw new Error("Geliştirme hata durumu etkin.");
 
-      yuklenenFilmler = testDurumu === "bos" ? [] : [...filmler];
+      yuklenenFilmler = testDurumu === "bos" ? [] : await vitrinFilmleriniYukle(dil);
       listeDurumu = yuklenenFilmler.length > 0 ? "dolu" : "bos";
     } catch (error) {
       yuklenenFilmler = [];
@@ -100,7 +99,7 @@
 
       // 2. Salon tipi filtreleme
       const salonUyumu =
-        seciliSalon === "Tümü" || film.salonTipi === seciliSalon;
+        seciliSalon === "Tümü" || film.salonTipi === seciliSalon || film.formatlar.includes(seciliSalon);
 
       // 3. Arama filtreleme (başlık, tür veya yönetmen)
       const aramaKucuk = arama.trim().toLocaleLowerCase("tr");
@@ -133,9 +132,10 @@
     return {
       baslik: film.baslik,
       altMetin: `${film.tur} · ${film.sure} · IMDb ${film.imdb}`,
+      ...(film.afis ? { gorsel: { src: film.afis, alt: film.baslik } } : {}),
       etiket: film.durum === "vizyonda" ? "Vizyonda" : "Pek Yakında",
       etiketTuru: film.durum === "vizyonda" ? "basari" : "bilgi",
-      href: `${localeOneki}/film/${film.id}${query ? `?${query}` : ""}`,
+      href: `${localeOneki}/film/detay?id=${film.id}${query ? `&${query}` : ""}`,
     };
   }
 

@@ -74,3 +74,40 @@ Bu aşama ortak operasyon bileşenlerini ve sekiz ekranı bağımsız yönetim r
 - Tarayıcıda yönetim özeti ve Büfe ekranındaki ikonlar görsel olarak kontrol edildi.
 - `lat check` — tüm doğrulamalar geçti.
 - `git diff --check` — patch boşluk hatası bulunmadı.
+
+## Aşama 4 — Tauri SQLite salt okunur entegrasyonu
+
+### Uygulama
+
+- `src/admin/data/tauriAdapter.ts`, mevcut `MockAdapter` sözleşmesini koruyarak Tauri veri adaptörü ve tarayıcı mock seçimini sağlar.
+- Tauri paneli açılışta `auth_me` ile yetkili oturumu doğrular; giriş `auth_login` ile yapılır. Geliştirme derlemesinde ilk yönetici hesabı, veritabanındaki ilk hesap olması koşuluyla `auth_register` üzerinden oluşturulabilir.
+- Dashboard metrikleri `cineq_dashboard`; filmler, sinemalar ve salonlar `crud_index` üzerinden SQLite'tan okunur. Bu koleksiyonların yazma eylemleri bu aşamada açıkça reddedilir; diğer prototip ekranları mock adaptörü kullanmayı sürdürür.
+- `window.__TAURI__` işareti Tauri yapılandırmasında etkinleştirildi; bu işaret yoksa tarayıcı mock akışı korunur.
+
+### Doğrulama
+
+- `bun run check` — 0 hata, 0 uyarı; mevcut `CanliRozet.tsx` React importu için 1 ipucu.
+- `bun run build` — başarılı; 55 statik sayfa üretildi.
+- Tarayıcıda `/admin/` açılarak Tauri dışı mock fallback'in çalıştığı doğrulandı.
+- `cargo test --lib backend --target-dir target/admin-tauri-integration` — 4 test geçti. Varsayılan hedef klasöründeki eski mutlak yol artefaktı nedeniyle temiz hedef klasörü kullanıldı.
+- `lat check` — tüm doğrulamalar geçti.
+- `git diff --check` — patch boşluk hatası bulunmadı.
+
+## Aşama 5 — SQLite CRUD, oturum ve ekran sağlamlaştırma
+
+### Uygulama
+
+- Taze veritabanı için örnek katalog, sinema, salon ve seansları yeni idempotent migration ile ekle.
+- Film ekleme/güncelleme ve yeni salon/koltuk haritası kaydetme akışlarını Tauri CRUD komutlarına bağla; tarayıcıda mock kalıcılığını koru.
+- Seans ve salon ekranlarında eksik koleksiyonları güvenli boş listelere dönüştür; seans rotalarını React Error Boundary ile yalıt.
+- Profilde `auth_me` kullanıcısının adını/rolünü göster; müşteri arayüzüne dönüş ve `auth_logout` seçenekleri ekle.
+- Bekleyen sipariş rozetini veriden hesapla ve kapıda doğrulama bildirimini `/kapi` hash rotasına bağla.
+- Dashboard günlük metrikleri boşsa tüm dönem sonucunu göster; uygulanan mimariyi `lat.md/mimari.md` içinde güncelle.
+
+### Doğrulama sonucu
+
+- `bun run check` — 0 hata; `CanliRozet.tsx` için mevcut bir import ipucu verdi.
+- `bun run build` — başarılı; 55 statik sayfa üretildi.
+- `cargo test --lib backend --target-dir target/admin-sqlite-fixes` (`src-tauri/` içinde) — 4 test geçti.
+- `lat check` — tüm doğrulamalar geçti.
+- `git diff --check` — geçti; Git yalnızca LF/CRLF dönüşümü hakkında uyardı.

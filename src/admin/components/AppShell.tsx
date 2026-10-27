@@ -1,13 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AdminIcon, type AdminIconName } from "./AdminIcon";
 import type { AdminRole, Lang } from "../domain/types";
+import { useAdminAuth } from "./AdminAuthGate";
+import { useAdminData } from "../AdminDataContext";
 
 export interface AdminNavItem {
   to: string;
   label: string;
   icon: AdminIconName;
-  badge?: string;
 }
 
 export interface AppShellProps {
@@ -23,16 +24,19 @@ const navItems: AdminNavItem[] = [
   { to: "/seanslar", label: "Seanslar", icon: "calendar" },
   { to: "/salonlar", label: "Salonlar", icon: "building" },
   { to: "/bufe", label: "Büfe", icon: "popcorn" },
-  { to: "/siparisler", label: "Siparişler", icon: "receipt", badge: "5" },
+  { to: "/siparisler", label: "Siparişler", icon: "receipt" },
   { to: "/kapi", label: "Kapı", icon: "scan" },
   { to: "/musteriler", label: "Müşteriler", icon: "users" },
 ];
 
-const roleLabels: Record<AdminRole, string> = {
+const roleLabels: Record<string, string> = {
   owner: "Sahip",
   support: "Destek",
   content: "İçerik",
   viewer: "İzleyici",
+  admin: "Yönetici",
+  cinema_manager: "Sinema yöneticisi",
+  box_office: "Gişe",
 };
 
 const languages: { code: Lang; label: string }[] = [
@@ -53,7 +57,32 @@ function storedTheme(): "gunduz" | "gece" {
 export function AppShell({ children, role = "owner", lang = "tr", onLangChange }: AppShellProps) {
   const [theme, setTheme] = useState<"gunduz" | "gece">(storedTheme);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileMenu, setProfileMenu] = useState<"sidebar" | "topbar" | null>(null);
+  const [profileError, setProfileError] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
+  const { session, logout } = useAdminAuth();
+  const { data } = useAdminData();
+  const orders = Array.isArray(data?.orders) ? data.orders : [];
+  const pendingOrders = orders.filter((order) => order?.durum === "bekliyor").length;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const gatePendingOrders = orders.filter((order) => order?.durum === "odendi" && order.olusturma?.slice(0, 10) === today).length;
+  const userName = session?.user.name || "Yönetici";
+  const initials = userName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("tr-TR") || "Y";
+  const userRole = session?.roles.length
+    ? session.roles.map((item) => roleLabels[item] ?? item).join(", ")
+    : session ? (session.superAdmin ? "Süper yönetici" : roleLabels[role]) : "Önizleme";
+
+  async function handleLogout() {
+    setProfileError("");
+    try {
+      await logout();
+      setProfileMenu(null);
+    } catch (reason) {
+      setProfileError(reason instanceof Error ? reason.message : "Oturum kapatılamadı.");
+    }
+  }
 
   useEffect(() => {
     document.documentElement.dataset.tema = theme;
@@ -65,6 +94,11 @@ export function AppShell({ children, role = "owner", lang = "tr", onLangChange }
       console.warn("Yönetim paneli teması bu tarayıcıda kalıcı kaydedilemedi.", error);
     }
   }, [lang, theme]);
+
+  useEffect(() => {
+    setProfileMenu(null);
+    setNotificationsOpen(false);
+  }, [location.pathname]);
 
   const activePage = navItems.find((item) =>
     item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to),
@@ -88,14 +122,23 @@ export function AppShell({ children, role = "owner", lang = "tr", onLangChange }
             >
               <span className="admin-nav__icon"><AdminIcon name={item.icon} /></span>
               <span>{item.label}</span>
-              {item.badge && <span className="admin-nav__badge">{item.badge}</span>}
+              {item.to === "/siparisler" && pendingOrders > 0 && <span className="admin-nav__badge">{pendingOrders}</span>}
             </NavLink>
           ))}
         </nav>
         <div className="admin-sidebar__footer">
-          <span className="admin-avatar" aria-hidden="true">DY</span>
-          <span className="admin-user-copy"><strong>Deniz Yönetici</strong><small>Yönetici hesabı</small></span>
-          <span className="admin-role-badge">{roleLabels[role]}</span>
+          <div className="admin-profile-wrap">
+            <button className="admin-profile-trigger admin-profile-trigger--sidebar" type="button" aria-expanded={profileMenu === "sidebar"} onClick={() => { setProfileMenu((value) => value === "sidebar" ? null : "sidebar"); setProfileError(""); }}>
+              <span className="admin-avatar" aria-hidden="true">{initials}</span>
+              <span className="admin-user-copy"><strong>{userName}</strong><small>{session?.user.email ?? "Yönetim hesabı"}</small></span>
+            </button>
+            <span className="admin-role-badge">{userRole}</span>
+            {profileMenu === "sidebar" && <div className="admin-profile-menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => { window.location.href = "/"; }}>Müşteri Arayüzüne Dön</button>
+              <button type="button" role="menuitem" onClick={() => void handleLogout()}>Oturumu Kapat</button>
+              {profileError && <p className="admin-inline-error" role="alert">{profileError}</p>}
+            </div>}
+          </div>
         </div>
       </aside>
 
@@ -126,14 +169,21 @@ export function AppShell({ children, role = "owner", lang = "tr", onLangChange }
                 <AdminIcon name="bell" /><span className="admin-notification-dot" />
               </button>
               {notificationsOpen && (
-                <div className="admin-notification-popover" role="status">
+                <div className="admin-notification-popover">
                   <strong>Bildirimler</strong>
-                  <p>Bugün 5 sipariş kapıda doğrulama bekliyor.</p>
+                  <button className="admin-notification-link" type="button" onClick={() => { setNotificationsOpen(false); navigate("/kapi"); }}>Bugün {gatePendingOrders} sipariş kapıda doğrulama bekliyor.</button>
                   <p>Bir büfe ürününün stoğu kritik seviyede.</p>
                 </div>
               )}
             </div>
-            <span className="admin-topbar__identity"><span className="admin-avatar admin-avatar--small">DY</span><strong>Deniz</strong></span>
+            <div className="admin-profile-wrap">
+              <button className="admin-profile-trigger admin-topbar__identity" type="button" aria-expanded={profileMenu === "topbar"} onClick={() => { setProfileMenu((value) => value === "topbar" ? null : "topbar"); setProfileError(""); }}><span className="admin-avatar admin-avatar--small" aria-hidden="true">{initials}</span><strong>{userName}</strong></button>
+              {profileMenu === "topbar" && <div className="admin-profile-menu admin-profile-menu--topbar" role="menu">
+                <button type="button" role="menuitem" onClick={() => { window.location.href = "/"; }}>Müşteri Arayüzüne Dön</button>
+                <button type="button" role="menuitem" onClick={() => void handleLogout()}>Oturumu Kapat</button>
+                {profileError && <p className="admin-inline-error" role="alert">{profileError}</p>}
+              </div>}
+            </div>
           </div>
         </header>
         <main className="admin-main">{children}</main>

@@ -1,68 +1,121 @@
 <script lang="ts">
-  // CineQ Film Detay Ekranı — Dinamik VIP Koltuk Fiyatlandırması, Yaş/Ses Rozetleri, Porsiyonlu Büfe (Svelte 5 Runes)
+  // CineQ film detay, SQLite seans ve salon haritası.
   import { onMount } from "svelte";
-  import { bufeUrunleri, tl } from "$lib/data";
-  import type { BufePorsiyon, BufeUrunu, Film } from "$lib/types";
+  import { tl } from "$lib/data";
+  import type { BufeUrunu, Film } from "$lib/types";
+  import { vitrinVerileriniYukle } from "$lib/katalog";
+  import { biletlerim } from "$lib/biletler.svelte";
   import { sepet } from "$lib/sepet.svelte";
   import { filmDetayMetinleri } from "$lib/i18n/film-detay";
   import type { UygulamaDili } from "$lib/i18n/liste-durumlari";
 
-  let { etkinlik: e, lang = "tr" }: { etkinlik: Film; lang?: UygulamaDili } = $props();
+  let { etkinlik: ilkFilm, filmId: ilkFilmId, lang = "tr" }: { etkinlik?: Film; filmId?: string; lang?: UygulamaDili } = $props();
+  const bosFilm: Film = {
+    id: 0,
+    baslik: "",
+    tur: "Dram",
+    durum: "yakinda",
+    salonTipi: "2D",
+    sure: "",
+    imdb: 0,
+    yasSiniri: "Genel",
+    formatlar: [],
+    yonetmen: "",
+    oyuncular: [],
+    salon: "",
+    seanslar: [],
+    renk: "var(--zemin)",
+    aciklama: "",
+    biletler: [],
+  };
+  let e = $state<Film>(ilkFilm ?? bosFilm);
+  let yukleniyor = $state(true);
+  let hata = $state("");
+  let bufeUrunleri = $state<BufeUrunu[]>([]);
   let filtreQuery = $state("");
   let metin = $derived(filmDetayMetinleri[lang]);
   let geriDonUrl = $derived(`${lang === "tr" ? "" : `/${lang}`}/${filtreQuery ? `?${filtreQuery}` : ""}`);
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);
+    const filmId = params.get("id") ?? ilkFilmId ?? String(ilkFilm?.id ?? "");
     const listeParametreleri = new URLSearchParams();
     for (const anahtar of ["ara", "vizyon", "salon"]) {
       const deger = params.get(anahtar);
       if (deger) listeParametreleri.set(anahtar, deger);
     }
     filtreQuery = listeParametreleri.toString();
+    void filmiYukle(filmId);
   });
 
-  // Seçili Seans
-  let seciliSeans = $state("");
-  $effect(() => {
-    if (!seciliSeans && e.seanslar?.[0]) {
-      seciliSeans = e.seanslar[0];
+  async function filmiYukle(id: string) {
+    yukleniyor = true;
+    hata = "";
+    try {
+      if (!/^\d+$/.test(id)) throw new Error("Film kimliği geçersiz.");
+      const [catalog] = await Promise.all([
+        vitrinVerileriniYukle(lang),
+        biletlerim.yenile(),
+      ]);
+      const film = catalog.films.find((item) => item.id === Number(id));
+      if (!film) throw new Error("Bu film SQLite kataloğunda bulunamadı.");
+      e = film;
+      bufeUrunleri = catalog.bufe;
+      seciliSeans = film.gosterimSeanslari?.[0]?.id ?? "";
+      seciliKoltuklar = [];
+    } catch (reason) {
+      hata = reason instanceof Error ? reason.message : "Film bilgileri yüklenemedi.";
+    } finally {
+      yukleniyor = false;
     }
-  });
+  }
 
-  // Seçili Bilet Tipi
-  let seciliBiletIndex = $state(0);
-  const seciliBilet = $derived(e.biletler[seciliBiletIndex] ?? { ad: "Tam", fiyat: 180 });
+  let seciliSeans = $state("");
+  let seciliKoltuklar = $state<string[]>([]);
+  let biletTuru = $state<"tam" | "ogrenci">("tam");
+  const seanslar = $derived(e.gosterimSeanslari ?? []);
+  const aktifSeans = $derived(seanslar.find((session) => session.id === seciliSeans));
+  const harita = $derived(aktifSeans?.salon.harita);
+  const satirlar = $derived(Array.from({ length: harita?.satir ?? 0 }, (_, index) => index));
+  const sutunlar = $derived(Array.from({ length: harita?.sutun ?? 0 }, (_, index) => index));
+  const doluKoltuklar = $derived(new Set((aktifSeans?.doluKoltuklar ?? []).map((seat) => `${seat.satir}:${seat.sutun}`)));
+  const kendiKoltuklar = $derived(new Set(
+    biletlerim.liste
+      .filter((ticket) => ticket.seansId === seciliSeans && ticket.durum !== "iptal")
+      .flatMap((ticket) => ticket.koltuklar.map((seat) => {
+        const match = /^([A-Z])(\d+)$/.exec(seat);
+        return match ? `${(match[1]?.charCodeAt(0) ?? 65) - 65}:${Number(match[2]) - 1}` : "";
+      })),
+  ));
 
-  // Koltuk Matrisi Verisi: 4 Sıra (A, B, C, D) × 6 Koltuk (1..6)
-  const siralar = ["A", "B", "C", "D"];
-  const koltukNumaralari = [1, 2, 3, 4, 5, 6];
-  const doluKoltuklar = new Set(["A2", "A5", "B1", "C4", "C5"]);
+  function koltukKodu(key: string) {
+    const [row, column] = key.split(":").map(Number);
+    return `${String.fromCharCode(65 + row)}${column + 1}`;
+  }
 
-  // Kullanıcının seçtiği koltuklar
-  let seciliKoltuklar = $state<string[]>(["B3"]);
-
-  function koltukTikla(kod: string) {
-    if (doluKoltuklar.has(kod)) return;
-    if (seciliKoltuklar.includes(kod)) {
-      seciliKoltuklar = seciliKoltuklar.filter((k) => k !== kod);
+  function koltukTikla(key: string) {
+    if (doluKoltuklar.has(key)) return;
+    if (seciliKoltuklar.includes(key)) {
+      seciliKoltuklar = seciliKoltuklar.filter((seat) => seat !== key);
     } else {
       if (seciliKoltuklar.length >= 6) {
         alert(metin.maxKoltukUyarisi);
         return;
       }
-      seciliKoltuklar = [...seciliKoltuklar, kod];
+      seciliKoltuklar = [...seciliKoltuklar, key];
     }
   }
 
-  // Dinamik Koltuk Fiyatlandırması: D Sırası VIP (+50 TL Fark)
-  const VIP_EK_UCRET = 50;
-  const vipKoltukSayisi = $derived(seciliKoltuklar.filter((k) => k.startsWith("D")).length);
+  const vipKoltukSayisi = $derived(
+    seciliKoltuklar.filter((seat) => harita?.vipSatirlari.includes(Number(seat.split(":")[0]))).length
+  );
   const standartKoltukSayisi = $derived(seciliKoltuklar.length - vipKoltukSayisi);
-
+  const standartFiyat = $derived(biletTuru === "ogrenci"
+    ? aktifSeans?.fiyat.ogrenci ?? 0
+    : aktifSeans?.fiyat.tam ?? aktifSeans?.fiyat.standart ?? 0);
+  const vipFiyat = $derived(aktifSeans?.fiyat.vip ?? standartFiyat);
   const biletToplam = $derived(
-    standartKoltukSayisi * seciliBilet.fiyat +
-      vipKoltukSayisi * (seciliBilet.fiyat + VIP_EK_UCRET)
+    standartKoltukSayisi * standartFiyat + vipKoltukSayisi * vipFiyat
   );
 
   // Büfe Siparişleri ve Porsiyon Yönetimi
@@ -115,6 +168,10 @@
   const genelToplam = $derived(biletToplam + bufeToplam);
 
   function sepeteEkleVeGit() {
+    if (!aktifSeans) {
+      alert("Lütfen bir seans seçin.");
+      return;
+    }
     if (seciliKoltuklar.length === 0) {
       alert(metin.enAzBirKoltukUyarisi);
       return;
@@ -123,13 +180,14 @@
     // 1. Film Biletini Ekle
     sepet.ekleBilet(
       e,
-      seciliBilet,
-      seciliSeans,
-      e.salon,
-      seciliKoltuklar,
+      { ad: biletTuru === "ogrenci" ? "Öğrenci" : "Tam", fiyat: standartFiyat },
+      aktifSeans.baslangic.slice(11, 16),
+      aktifSeans.salon.ad,
+      seciliKoltuklar.map(koltukKodu),
       seciliKoltuklar.length,
       vipKoltukSayisi,
-      biletToplam
+      biletToplam,
+      aktifSeans.id
     );
 
     // 2. Seçilen Büfe Ürünlerini Ekle
@@ -138,7 +196,7 @@
       if (secim && secim.adet > 0) {
         const porsiyon = u.porsiyonlar?.[secim.porsiyonIndex];
         const birimFiyat = porsiyon?.fiyat ?? u.fiyat;
-        sepet.ekleBufe(u, secim.adet, porsiyon?.ad, birimFiyat);
+        sepet.ekleBufe(u, secim.adet, porsiyon?.ad ?? u.boyut, birimFiyat);
       }
     }
 
@@ -148,6 +206,14 @@
   }
 </script>
 
+{#if yukleniyor}
+  <div class="sayfa"><p role="status">Film ve seans bilgileri yükleniyor...</p></div>
+{:else if hata}
+  <div class="sayfa" role="alert">
+    <p>{hata}</p>
+    <button class="btn" type="button" onclick={() => void filmiYukle(new URLSearchParams(window.location.search).get("id") ?? ilkFilmId ?? String(ilkFilm?.id ?? ""))}>Tekrar dene</button>
+  </div>
+{:else}
 <div class="detay-kapsayici">
   <a class="geri-don" href={geriDonUrl}>← {metin.geriDon}</a>
   <!-- Üst Afiş Alanı -->
@@ -180,30 +246,20 @@
     <div class="bolum">
       <h2>{metin.seansSec}</h2>
       <div class="seans-secenekleri">
-        {#each e.seanslar as s}
+        {#each seanslar as session}
+          {@const s = session.baslangic.slice(11, 16)}
           <button
             type="button"
             class="seans-btn"
-            class:aktif={seciliSeans === s}
-            onclick={() => (seciliSeans = s)}
+            class:aktif={seciliSeans === session.id}
+            onclick={() => { seciliSeans = session.id; seciliKoltuklar = []; }}
           >
-            {s}
+            {s} · {session.salon.sinema} · {session.salon.ad} · {session.salon.sehir}
           </button>
         {/each}
-      </div>
-    </div>
-
-    <!-- Bilet Tipi Seçimi -->
-    <div class="bolum">
-      <h2>{metin.biletKategorisi}</h2>
-      <div class="bilet-secenekleri">
-        {#each e.biletler as b, i}
-          <label class="kart bilet-karti" class:aktif={seciliBiletIndex === i}>
-            <input type="radio" name="bilet-tipi" value={i} bind:group={seciliBiletIndex} />
-            <span class="ad">{b.ad}</span>
-            <strong class="fiyat">{tl(b.fiyat)}</strong>
-          </label>
-        {/each}
+        {#if seanslar.length === 0}
+          <p>Bu film için henüz seans planlanmadı.</p>
+        {/if}
       </div>
     </div>
 
@@ -212,9 +268,16 @@
       <div class="bolum-baslik-satir">
         <h2>{metin.koltukSec(seciliKoltuklar.length)}</h2>
         {#if vipKoltukSayisi > 0}
-          <span class="vip-bilgi-etiket">✨ {vipKoltukSayisi}x VIP (+{tl(vipKoltukSayisi * VIP_EK_UCRET)})</span>
+          <span class="vip-bilgi-etiket">{vipKoltukSayisi}x VIP · {tl(vipFiyat)} / koltuk</span>
         {/if}
       </div>
+      <label class="bilet-turu-secici">
+        <span>Bilet türü</span>
+        <select bind:value={biletTuru}>
+          <option value="tam">Tam · {tl(aktifSeans?.fiyat.tam ?? standartFiyat)}</option>
+          <option value="ogrenci">Öğrenci · {tl(aktifSeans?.fiyat.ogrenci ?? 0)}</option>
+        </select>
+      </label>
 
       <div class="kart salon-plani">
         <div class="perde">
@@ -222,43 +285,59 @@
           <span>{metin.perde}</span>
         </div>
 
+        {#if aktifSeans && harita}
         <div class="koltuk-matrisi">
-          {#each siralar as sira}
+          {#each satirlar as satir}
+            {@const sira = String.fromCharCode(65 + satir)}
             <div class="sira-satir">
               <span class="sira-harf">{sira}</span>
               <div class="sira-koltuklar">
-                {#each koltukNumaralari as no}
-                  {@const kod = `${sira}${no}`}
-                  {@const dolu = doluKoltuklar.has(kod)}
-                  {@const secili = seciliKoltuklar.includes(kod)}
-                  {@const vip = sira === "D"}
+                {#each sutunlar as sutun}
+                  {#if harita.koridorSutunlari.includes(sutun)}
+                    <span class="koltuk-koridor" aria-hidden="true"></span>
+                  {:else}
+                  {@const key = `${satir}:${sutun}`}
+                  {@const kod = `${sira}${sutun + 1}`}
+                  {@const kullanilamaz = harita.kullanilamaz.some((seat) => seat.satir === satir && seat.sutun === sutun)}
+                  {@const dolu = kullanilamaz || doluKoltuklar.has(key)}
+                  {@const kendi = kendiKoltuklar.has(key)}
+                  {@const secili = seciliKoltuklar.includes(key)}
+                  {@const vip = harita.vipSatirlari.includes(satir)}
                   <button
                     type="button"
                     class="koltuk"
                     class:dolu
                     class:secili
                     class:vip
+                    class:kullanilamaz
+                    class:kendi
                     disabled={dolu}
-                    onclick={() => koltukTikla(kod)}
+                    onclick={() => koltukTikla(key)}
                     aria-label={metin.koltukAria(
                       kod,
-                      dolu ? metin.dolu : secili ? metin.secili : metin.bos,
+                      kullanilamaz ? "kullanılamaz" : kendi ? "Size ait bilet" : dolu ? metin.dolu : secili ? metin.secili : metin.bos,
                       vip ? metin.vip : metin.standart,
                     )}
                   >
                     {kod}
                   </button>
+                  {/if}
                 {/each}
               </div>
             </div>
           {/each}
         </div>
+        {:else}
+          <p>Seans seçerek salon yerleşimini görüntüleyin.</p>
+        {/if}
 
         <div class="koltuk-lejant">
           <div class="lejant-oge"><span class="kutu bos"></span> {metin.bos}</div>
           <div class="lejant-oge"><span class="kutu secili"></span> {metin.secili}</div>
           <div class="lejant-oge"><span class="kutu dolu"></span> {metin.dolu}</div>
-          <div class="lejant-oge"><span class="kutu vip"></span> {metin.vipSira} (+50 TL)</div>
+          <div class="lejant-oge"><span class="kutu kendi"></span> Size ait bilet</div>
+          <div class="lejant-oge"><span class="kutu vip"></span> {metin.vipSira} · {tl(vipFiyat)}</div>
+          <div class="lejant-oge"><span class="kutu kullanilamaz"></span> Kullanılamaz</div>
         </div>
       </div>
     </div>
@@ -278,7 +357,7 @@
                   <span class="bufe-rozet">{u.rozet}</span>
                 {/if}
               </div>
-              <p>{u.aciklama}</p>
+              <p>{u.boyut ?? u.aciklama}{typeof u.stok === "number" ? ` · Stok: ${u.stok}` : ""}</p>
 
               {#if u.porsiyonlar && u.porsiyonlar.length > 0}
                 <div class="porsiyon-secici">
@@ -299,6 +378,7 @@
             </div>
 
             <div class="bufe-adet-kontrol">
+              {#if u.stok === 0}<span class="bufe-fiyat">Stokta yok</span>{/if}
               <button
                 type="button"
                 class="sayac-btn"
@@ -314,6 +394,7 @@
                 class="sayac-btn"
                 onclick={() => bufeArtir(u)}
                 aria-label={metin.artir}
+                disabled={typeof u.stok === "number" && secim.adet >= u.stok}
               >
                 +
               </button>
@@ -331,7 +412,7 @@
       </div>
       {#if vipKoltukSayisi > 0}
         <div class="ozet-satir alt-detay">
-          <span>{metin.standartVipOzeti(standartKoltukSayisi, vipKoltukSayisi, tl(VIP_EK_UCRET))}</span>
+          <span>Standart {standartKoltukSayisi} × {tl(standartFiyat)} · VIP {vipKoltukSayisi} × {tl(vipFiyat)}</span>
           <span>{metin.dinamikFiyat}</span>
         </div>
       {/if}
@@ -346,12 +427,13 @@
         <span class="toplam-rakam">{tl(genelToplam)}</span>
       </div>
 
-      <button class="btn satin-al-btn" onclick={sepeteEkleVeGit}>
+      <button class="btn satin-al-btn" disabled={!aktifSeans || seciliKoltuklar.length === 0} onclick={sepeteEkleVeGit}>
         {metin.sepeteEkle} · {tl(genelToplam)}
       </button>
     </div>
   </div>
 </div>
+{/if}
 
 <style>
   .detay-kapsayici {
@@ -364,7 +446,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--durum-oge-araligi);
-    margin: var(--durum-aralik) 18px 0;
+    margin: var(--durum-aralik) 18px 1rem;
     padding: var(--durum-dugme-dikey-bosluk) var(--durum-dugme-yatay-bosluk);
     border: var(--kart-kenar-genisligi) solid var(--kenar);
     border-radius: var(--kart-etiket-radius);
@@ -482,6 +564,25 @@
     margin-block-end: 10px;
   }
 
+  .bilet-turu-secici {
+    display: flex;
+    max-width: 280px;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 12px;
+    color: var(--yazi-soluk);
+    font-size: 13px;
+  }
+
+  .bilet-turu-secici select {
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--kenar);
+    border-radius: 8px;
+    background: var(--kart);
+    color: var(--yazi);
+  }
+
   .vip-bilgi-etiket {
     font-size: 12px;
     font-weight: 700;
@@ -593,14 +694,16 @@
     flex-direction: column;
     gap: 8px;
     width: 100%;
-    max-width: 440px;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .sira-satir {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 10px;
+    min-width: max-content;
   }
 
   .sira-harf {
@@ -614,6 +717,12 @@
   .sira-koltuklar {
     display: flex;
     gap: 8px;
+    min-width: max-content;
+  }
+
+  .koltuk-koridor {
+    width: 24px;
+    flex: 0 0 24px;
   }
 
   .koltuk {
@@ -651,6 +760,20 @@
     color: var(--yazi-soluk);
     cursor: not-allowed;
     opacity: 0.6;
+  }
+
+  .koltuk.kullanilamaz {
+    background: var(--kenar);
+    color: var(--yazi-soluk);
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .koltuk.dolu.kendi {
+    border: 2px solid var(--renk-ana);
+    background: color-mix(in srgb, var(--renk-ana) 30%, var(--kart));
+    color: var(--yazi);
+    opacity: 1;
   }
 
   .koltuk-lejant {
@@ -691,6 +814,16 @@
   .kutu.vip {
     background: var(--kart);
     border: 1px solid var(--vip-renk);
+  }
+
+  .kutu.kendi {
+    border: 2px solid var(--renk-ana);
+    background: color-mix(in srgb, var(--renk-ana) 30%, var(--kart));
+  }
+
+  .kutu.kullanilamaz {
+    background: var(--kenar);
+    opacity: 0.5;
   }
 
   /* Büfe Kartları & Porsiyonlar */

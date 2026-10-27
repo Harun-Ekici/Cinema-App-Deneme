@@ -1,4 +1,4 @@
-// CineQ Sepet Durum Yönetimi — LocalStorage Kalıcılığı & İndirim Kodu (Svelte 5 Runes)
+// CineQ Sepet Durum Yönetimi — Sekme Oturumu Kalıcılığı & İndirim Kodu (Svelte 5 Runes)
 import type { BiletSepetKalemi, BufeSepetKalemi, SepetKalemi } from "./types";
 import type { BiletKategorisi, Film, BufeUrunu } from "./types";
 
@@ -8,8 +8,8 @@ const ANAHTAR_KOD = "cineq_sepet_indirim";
 
 function yukleBiletler(): BiletSepetKalemi[] {
   try {
-    if (typeof localStorage === "undefined") return [];
-    const veri = localStorage.getItem(ANAHTAR_BILETLER);
+    if (typeof sessionStorage === "undefined") return [];
+    const veri = sessionStorage.getItem(ANAHTAR_BILETLER);
     return veri ? JSON.parse(veri) : [];
   } catch {
     return [];
@@ -18,8 +18,8 @@ function yukleBiletler(): BiletSepetKalemi[] {
 
 function yukleBufe(): BufeSepetKalemi[] {
   try {
-    if (typeof localStorage === "undefined") return [];
-    const veri = localStorage.getItem(ANAHTAR_BUFE);
+    if (typeof sessionStorage === "undefined") return [];
+    const veri = sessionStorage.getItem(ANAHTAR_BUFE);
     return veri ? JSON.parse(veri) : [];
   } catch {
     return [];
@@ -28,8 +28,8 @@ function yukleBufe(): BufeSepetKalemi[] {
 
 function yukleKod(): string {
   try {
-    if (typeof localStorage === "undefined") return "";
-    return localStorage.getItem(ANAHTAR_KOD) ?? "";
+    if (typeof sessionStorage === "undefined") return "";
+    return sessionStorage.getItem(ANAHTAR_KOD) ?? "";
   } catch {
     return "";
   }
@@ -53,11 +53,11 @@ class Sepet {
   }
 
   private kaydet() {
-    if (typeof localStorage === "undefined") return;
+    if (typeof sessionStorage === "undefined") return;
     try {
-      localStorage.setItem(ANAHTAR_BILETLER, JSON.stringify(this.biletler));
-      localStorage.setItem(ANAHTAR_BUFE, JSON.stringify(this.bufeKalemleri));
-      localStorage.setItem(ANAHTAR_KOD, this.indirimKodu);
+      sessionStorage.setItem(ANAHTAR_BILETLER, JSON.stringify(this.biletler));
+      sessionStorage.setItem(ANAHTAR_BUFE, JSON.stringify(this.bufeKalemleri));
+      sessionStorage.setItem(ANAHTAR_KOD, this.indirimKodu);
     } catch {
       // Hata yok sayılır
     }
@@ -95,6 +95,7 @@ class Sepet {
     adet: number = 1,
     vipKoltukSayisi: number = 0,
     toplamTutar?: number,
+    seansId?: string,
   ) {
     const hesaplananTutar = toplamTutar ?? (bilet.fiyat * adet + vipKoltukSayisi * 50);
     this.biletler.push({
@@ -102,6 +103,7 @@ class Sepet {
       film,
       bilet,
       seans,
+      seansId,
       salon,
       koltuklar,
       adet,

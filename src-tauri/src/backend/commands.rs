@@ -19,12 +19,24 @@ pub fn auth_login(state: State<'_, AppState>, email: String, password: String) -
     c::auth_login(&state, &email, &password)
 }
 #[tauri::command]
-pub fn auth_logout(state: State<'_, AppState>) {
+pub fn auth_logout(state: State<'_, AppState>) -> AppResult<()> {
     c::auth_logout(&state)
 }
 #[tauri::command]
 pub fn auth_me(state: State<'_, AppState>) -> AppResult<Value> {
     c::auth_me(&state)
+}
+#[tauri::command]
+pub fn auth_owner_setup_required(state: State<'_, AppState>) -> AppResult<bool> {
+    c::auth_owner_setup_required(&state)
+}
+#[tauri::command]
+pub fn auth_owner_set_initial_password(state: State<'_, AppState>, password: String) -> AppResult<Value> {
+    c::auth_owner_set_initial_password(&state, &password)
+}
+#[tauri::command]
+pub fn auth_session_index(state: State<'_, AppState>) -> AppResult<Vec<Value>> {
+    c::auth_session_index(&state)
 }
 
 // ── Kullanıcılar ──

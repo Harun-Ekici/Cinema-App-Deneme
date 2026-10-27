@@ -1,27 +1,105 @@
 <script lang="ts">
   // CineQ Profil ve Ayarlar — Tema Yönetimi ve Kullanıcı Bilgisi (Svelte 5 Runes)
+  import { onMount } from "svelte";
   import { biletlerim } from "$lib/biletler.svelte";
   import { tema, temaListesi, type TemaModu } from "$lib/tema.svelte";
+  import {
+    authLogin,
+    authLogout,
+    authMe,
+    authOwnerSetupRequired,
+    authSetOwnerInitialPassword,
+    isTauriRuntime,
+    OWNER_ACCOUNT_EMAIL,
+    type AdminAuthSession,
+  } from "../admin/data/tauriAdapter";
 
+  const tauri = isTauriRuntime();
   let kullanici = $state(
-    typeof localStorage !== "undefined"
+    !tauri && typeof localStorage !== "undefined"
       ? (localStorage.getItem("kullanici") ?? "")
       : ""
   );
   let ad = $state("");
   let eposta = $state("");
+  let parola = $state("");
+  let parolaTekrar = $state("");
+  let authSession = $state<AdminAuthSession | null>(null);
+  let adminYetkili = $state(false);
+  let ownerKurulumuGerekli = $state(false);
+  let authYukleniyor = $state(false);
+  let authGonderiliyor = $state(false);
+  let authHatasi = $state("");
+  let yetkiKontrolHatasi = $state("");
 
-  const gecerli = $derived(ad.trim().length > 1 && eposta.includes("@"));
+  const profilAdi = $derived(tauri ? authSession?.user.name ?? "" : kullanici);
+  const gecerli = $derived(
+    tauri
+      ? eposta.includes("@") && parola.length > 0 &&
+        (!ownerKurulumuGerekli || parola === parolaTekrar)
+      : ad.trim().length > 1 && eposta.includes("@")
+  );
 
-  function girisYap(event: SubmitEvent) {
+  onMount(async () => {
+    if (!tauri) return;
+    authYukleniyor = true;
+    try {
+      const [session, setupRequired] = await Promise.all([authMe(), authOwnerSetupRequired()]);
+      authSession = session;
+      ownerKurulumuGerekli = setupRequired;
+      adminYetkili = session?.roles.some((role) => role.toLocaleLowerCase("tr") === "admin" || role.toLocaleLowerCase("tr") === "owner") ?? false;
+      if (setupRequired) eposta = OWNER_ACCOUNT_EMAIL;
+    } catch (error) {
+      yetkiKontrolHatasi = error instanceof Error ? error.message : "Yönetici yetkisi doğrulanamadı.";
+      console.error("Profilde yönetici rolü doğrulanamadı.", error);
+    } finally {
+      authYukleniyor = false;
+    }
+  });
+
+  async function girisYap(event: SubmitEvent) {
     event.preventDefault();
+    authHatasi = "";
+    if (tauri) {
+      authGonderiliyor = true;
+      try {
+        const ownerKurulumunuYapiyor = ownerKurulumuGerekli && eposta.trim().toLocaleLowerCase("en") === OWNER_ACCOUNT_EMAIL;
+        const session = ownerKurulumunuYapiyor
+          ? await authSetOwnerInitialPassword(parola)
+          : await authLogin(eposta, parola);
+        authSession = session;
+        adminYetkili = session.roles.some((role) => role.toLocaleLowerCase("tr") === "admin" || role.toLocaleLowerCase("tr") === "owner");
+        if (ownerKurulumunuYapiyor) ownerKurulumuGerekli = false;
+        parola = "";
+        parolaTekrar = "";
+      } catch (error) {
+        authHatasi = error instanceof Error ? error.message : "Oturum açılamadı.";
+      } finally {
+        authGonderiliyor = false;
+      }
+      return;
+    }
+
     kullanici = ad.trim();
     if (typeof localStorage !== "undefined") {
       localStorage.setItem("kullanici", kullanici);
     }
   }
 
-  function cikisYap() {
+  async function cikisYap() {
+    if (tauri) {
+      try {
+        await authLogout();
+        authSession = null;
+        adminYetkili = false;
+        parola = "";
+        parolaTekrar = "";
+        authHatasi = "";
+      } catch (error) {
+        authHatasi = error instanceof Error ? error.message : "Oturum kapatılamadı.";
+      }
+      return;
+    }
     kullanici = "";
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("kullanici");
@@ -33,31 +111,72 @@
   <h1>Profil & Ayarlar</h1>
 
   <!-- 1. Kullanıcı Profili veya Giriş Formu -->
-  {#if kullanici}
+  {#if profilAdi}
     <div class="kart profil-karti">
-      <div class="avatar">{kullanici[0].toLocaleUpperCase("tr")}</div>
-      <h2>Merhaba, {kullanici}</h2>
+      <div class="avatar">{profilAdi[0].toLocaleUpperCase("tr")}</div>
+      <h2>Merhaba, {profilAdi}</h2>
       <p class="bilet-sayac">{biletlerim.liste.length} adet aktif veya geçmiş biletiniz var</p>
+      {#if yetkiKontrolHatasi}
+        <p class="profil-yetki-hatasi" role="status">Yönetim paneli erişimi doğrulanamadı.</p>
+      {/if}
+      {#if authHatasi}
+        <p class="profil-yetki-hatasi" role="alert">{authHatasi}</p>
+      {/if}
       <div class="profil-butonlar">
         <a class="btn" href="/biletlerim">Biletlerimi Görüntüle</a>
+        {#if adminYetkili}
+          <a class="btn ikincil-btn" href="/admin">Yönetim Paneline Git</a>
+        {/if}
         <button class="btn ikincil-btn" onclick={cikisYap}>Oturumu Kapat</button>
       </div>
     </div>
   {:else}
     <div class="kart giris-karti">
-      <h2>Hızlı Giriş Yap</h2>
-      <p class="giris-aciklama">Biletlerinizi ve rezervasyon geçmişinizi senkronize etmek için giriş yapın.</p>
+      <h2>{ownerKurulumuGerekli ? "Owner İlk Parola Kurulumu" : "Hızlı Giriş Yap"}</h2>
+      <p class="giris-aciklama">
+        {#if tauri}
+          {ownerKurulumuGerekli ? `${OWNER_ACCOUNT_EMAIL} hesabı için ilk parolanızı belirleyin.` : "Profilinizi ve yönetim izinlerinizi doğrulamak için e-posta ve parolanızla giriş yapın."}
+        {:else}
+          Biletlerinizi ve rezervasyon geçmişinizi senkronize etmek için giriş yapın.
+        {/if}
+      </p>
+      {#if authYukleniyor}
+        <p class="giris-aciklama" role="status">Oturum denetleniyor...</p>
+      {:else}
       <form class="form" onsubmit={girisYap}>
-        <label>
-          <span>Ad Soyad</span>
-          <input bind:value={ad} placeholder="Harun Ekici" />
-        </label>
+        {#if !tauri}
+          <label>
+            <span>Ad Soyad</span>
+            <input bind:value={ad} placeholder="Adınız Soyadınız" required />
+          </label>
+        {/if}
         <label>
           <span>E-posta</span>
-          <input type="email" bind:value={eposta} placeholder="harun@cineq.app" />
+          <input type="email" bind:value={eposta} placeholder="ornek@cineq.app" required readonly={tauri && ownerKurulumuGerekli} autocomplete="username" />
         </label>
-        <button class="btn" disabled={!gecerli}>Giriş Yap</button>
+        {#if tauri}
+          <label>
+            <span>{ownerKurulumuGerekli ? "Yeni Parola" : "Parola"}</span>
+            <input type="password" bind:value={parola} required minlength={ownerKurulumuGerekli ? 8 : undefined} maxlength="128" autocomplete={ownerKurulumuGerekli ? "new-password" : "current-password"} />
+          </label>
+          {#if ownerKurulumuGerekli}
+            <label>
+              <span>Yeni Parola (Tekrar)</span>
+              <input type="password" bind:value={parolaTekrar} required minlength="8" maxlength="128" autocomplete="new-password" />
+            </label>
+          {/if}
+        {/if}
+        {#if authHatasi}
+          <p class="profil-yetki-hatasi" role="alert">{authHatasi}</p>
+        {/if}
+        {#if yetkiKontrolHatasi}
+          <p class="profil-yetki-hatasi" role="alert">Oturum doğrulanamadı: {yetkiKontrolHatasi}</p>
+        {/if}
+        <button class="btn" disabled={!gecerli || authYukleniyor || authGonderiliyor}>
+          {authGonderiliyor ? "Doğrulanıyor..." : ownerKurulumuGerekli ? "Parolayı Oluştur" : "Giriş Yap"}
+        </button>
       </form>
+      {/if}
     </div>
   {/if}
 
@@ -177,8 +296,16 @@
     color: var(--yazi-soluk);
   }
 
+  .profil-yetki-hatasi {
+    margin: 0;
+    color: var(--yazi-soluk);
+    font-size: 13px;
+  }
+
   .profil-butonlar {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
     width: 100%;
     max-width: 380px;

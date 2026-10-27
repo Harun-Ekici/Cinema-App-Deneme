@@ -101,6 +101,9 @@ pub fn run() {
             backend::commands::auth_login,
             backend::commands::auth_logout,
             backend::commands::auth_me,
+            backend::commands::auth_owner_setup_required,
+            backend::commands::auth_owner_set_initial_password,
+            backend::commands::auth_session_index,
             backend::commands::user_index,
             backend::commands::user_store,
             backend::commands::user_sync_roles,
@@ -124,13 +127,18 @@ pub fn run() {
             backend::commands::db_migrate_status,
             backend::commands::contact_submit,
             backend::domain::seans_olustur,
+            backend::domain::seans_guncelle,
             backend::domain::seans_iptal,
             backend::domain::salon_yayinla,
             backend::domain::koltuk_sec,
             backend::domain::bilet_siparisi_olustur,
+            backend::domain::misafir_siparis_olustur,
+            backend::domain::misafir_biletlerim,
+            backend::domain::misafir_siparis_iptal,
             backend::domain::bilet_dogrula,
             backend::domain::siparis_iade,
-            backend::domain::cineq_dashboard
+            backend::domain::cineq_dashboard,
+            backend::domain::vitrin_katalog
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

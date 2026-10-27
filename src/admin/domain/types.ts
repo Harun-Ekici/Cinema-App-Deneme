@@ -48,6 +48,16 @@ export interface AdminUser {
   lastLoginAt?: string;
 }
 
+export interface AdminAuthSession {
+  id: string;
+  userId: number;
+  name: string;
+  email: string;
+  startedAt: string;
+  endedAt: string | null;
+  active: boolean;
+}
+
 export interface AuditLogEntry {
   id: string;
   at: string;
@@ -114,7 +124,7 @@ export interface Seans {
   baslangic: string;
   dil: "tr" | "en" | "de" | "ar";
   altyazi?: "tr" | "en" | "de" | "ar";
-  fiyat: Record<KoltukKategorisi, number>;
+  fiyat: Record<KoltukKategorisi, number> & { tam?: number; ogrenci?: number };
   iptal?: { neden: string; at: string };
 }
 
@@ -145,6 +155,7 @@ export interface BufeMenusu {
   icerik: { urunId: string; adet: number }[];
   fiyat: number;
   aktif: boolean;
+  durum?: "taslak" | "aktif" | "deaktif";
 }
 
 export interface Bilet {

@@ -30,5 +30,6 @@ export interface Bilet {
   toplamTutar: number; // Bilet kaydının Türk lirası cinsinden toplamı.
   filmId?: number; // Eski kayıtlarla uyumlu, ilişkili film kimliği.
   seansId?: string; // Eski kayıtlarla uyumlu, ilişkili seans kimliği.
+  siparisId?: string;
   durum?: BiletDurumu; // Biletin sabit rezervasyon ve kullanım durumlarından biri.
 }

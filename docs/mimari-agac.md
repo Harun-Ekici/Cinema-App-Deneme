@@ -32,16 +32,16 @@ CineQ
 │   ├── Canlı film arama ve tür/kategori filtreleme
 │   └── Vizyondaki filmler ve seans listesi
 │
-├── /film/[id] ve /[lang]/film/[id] (Film & Seans Detayı; 4 dil × 6 film)
-│   ├── Salon, tarih, seans saati ve koltuk seçim matrisi
+├── /film/detay?id=<id> ve /[lang]/film/detay?id=<id> (SQLite tabanlı dinamik film detayı)
+│   ├── SQLite seansı, gerçek salon haritası, dolu/kapalı koltuk ve standart/VIP fiyatı
 │   ├── Büfe ürünleri (mısır, içecek) seçimi ve sepete ekleme
 │   └── Filtreli listeye dönüş query parametreleriyle korunur
-├── /etkinlik/[id] (Eski film detay adresleri için uyumluluk rotası)
+├── /film/[id], /[lang]/film/[id] ve /etkinlik/[id] (Eski sayısal adresler için uyumluluk rotaları)
 ├── /404 (Geçersiz rota veya bulunamayan film için yerelleştirilmiş durum)
 │
 ├── /sepet (İşlem / Sepet / Onay)
 │   ├── Seçilen koltuklar ve büfe siparişleri özeti
-│   └── Toplam tutar hesaplama ve Rust backend komutu tetikleme
+│   └── Toplam tutar hesaplama ve bilet PNR üretimi; rezervasyon ve ödeme yerel prototip akışıdır
 │
 ├── /biletlerim (Sonuçlar / Kodlarım)
 │   ├── Rust tarafından üretilen benzersiz bilet doğrulama kodları
@@ -49,6 +49,7 @@ CineQ
 │
 ├── /profil (Kullanıcı & Tema)
 │   ├── Yerel kullanıcı profili (localStorage)
+│   ├── Tauri auth_me rolü admin/owner ise yönetim paneli bağlantısı
 │   ├── Gece / Gündüz teması geçişi
 │   └── Kurumsal bilgi sayfalarına hızlı menü bağlantıları
 │
@@ -91,13 +92,13 @@ Ekran Kırılımları ve Düzen Kuralları:
 
 ## Dil rotaları
 
-Dört bilgi sayfası (`hakkinda`, `iletisim`, `kosullar`, `gizlilik`) ve keşfet ana ekranı dört dilde yayınlanır. Film detayları Türkçe kök rotada ve EN/AR/FA dil önekleriyle oluşturulur; toplamda 24 film detay sayfası vardır. Türkçe kök rotadadır; diğer diller dil önekiyle açılır ve `<html>` etiketi dile göre `lang` ve `dir` alır.
+Dört bilgi sayfası (`hakkinda`, `iletisim`, `kosullar`, `gizlilik`), keşfet ana ekranı ve genel film detay host rotaları dört dilde yayınlanır. Genel detay rotası SQLite'tan gelen herhangi bir film kimliğini sorgu parametresiyle açar; Türkçe kök rotadadır, diğer diller önek kullanır.
 
 | Dil | Önek | Örnek | Yön |
 |---|---|---|---|
-| Türkçe | yok | `/hakkinda`, `/film/1` | `ltr` |
-| English | `/en` | `/en/hakkinda`, `/en/film/1` | `ltr` |
-| العربية | `/ar` | `/ar/hakkinda`, `/ar/film/1` | `rtl` |
-| فارسی | `/fa` | `/fa/hakkinda`, `/fa/film/1` | `rtl` |
+| Türkçe | yok | `/hakkinda`, `/film/detay?id=1` | `ltr` |
+| English | `/en` | `/en/hakkinda`, `/en/film/detay?id=1` | `ltr` |
+| العربية | `/ar` | `/ar/hakkinda`, `/ar/film/detay?id=1` | `rtl` |
+| فارسی | `/fa` | `/fa/hakkinda`, `/fa/film/detay?id=1` | `rtl` |
 
 Sayfalar arası dil geçişi `src/components/DilSecici.astro` ile yapılır. Yeni bir bilgi sayfası dört dil rotasıyla birlikte eklenir.

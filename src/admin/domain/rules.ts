@@ -8,7 +8,7 @@ import type {
 } from "./types";
 
 export const ALFA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const pnrBicimi = /^CNQ-S\d{1,2}-\d{4}-[A-HJ-NP-Z2-9]{6}$/;
+export const pnrBicimi = /^CNQ-S[A-Z0-9]{1,15}-(?:[01]\d|2[0-3])[0-5]\d-[A-Z0-9]{6}$/;
 
 export function pnrUret(salonNo: number, baslangic: string, rastgele6: string): string {
   const saat = baslangic.slice(11, 13) + baslangic.slice(14, 16);
@@ -44,9 +44,6 @@ export function cakisiyorMu(a: Seans, b: Seans, filmler: Film[], temizlikDk = 15
 
   const filmA = filmler.find((film) => film.id === a.filmId);
   const filmB = filmler.find((film) => film.id === b.filmId);
-  if (!filmA || !filmB) {
-    throw new Error("Seans çakışması denetlenirken film kaydı bulunamadı.");
-  }
 
   const baslangicA = new Date(a.baslangic).getTime();
   const baslangicB = new Date(b.baslangic).getTime();
@@ -54,8 +51,10 @@ export function cakisiyorMu(a: Seans, b: Seans, filmler: Film[], temizlikDk = 15
     throw new Error("Seans başlangıç tarihi geçersiz.");
   }
 
-  const bitisA = baslangicA + (filmA.sureDk + temizlikDk) * 60000;
-  const bitisB = baslangicB + (filmB.sureDk + temizlikDk) * 60000;
+  const sureA = filmA?.sureDk ?? 120;
+  const sureB = filmB?.sureDk ?? 120;
+  const bitisA = baslangicA + (sureA + temizlikDk) * 60000;
+  const bitisB = baslangicB + (sureB + temizlikDk) * 60000;
   return baslangicA < bitisB && baslangicB < bitisA;
 }
 

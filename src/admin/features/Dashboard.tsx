@@ -7,8 +7,9 @@ import { AdminIcon } from "../components/AdminIcon";
 const currency = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
 
 export default function Dashboard() {
-  const { data } = useAdminData();
+  const { data, dashboardMetrics } = useAdminData();
   const topFilm = useMemo(() => {
+    if (dashboardMetrics) return dashboardMetrics.enCokIzlenen[0]?.ad ?? "Henüz veri yok";
     if (!data) return "Henüz veri yok";
     const filmSales = new Map<number, number>();
     data.orders.forEach((order) => {
@@ -20,22 +21,43 @@ export default function Dashboard() {
     });
     const [filmId] = [...filmSales.entries()].sort((a, b) => b[1] - a[1])[0] ?? [];
     return data.films.find((film) => film.id === filmId)?.ad.tr ?? "Henüz veri yok";
-  }, [data]);
+  }, [data, dashboardMetrics]);
   if (!data) return null;
 
   const today = new Date().toISOString().slice(0, 10);
   const todaySessions = data.sessions.filter((session) => session.baslangic.startsWith(today));
   const todaySessionIds = new Set(todaySessions.map((session) => session.id));
   const todayOrders = data.orders.filter((order) => order.olusturma.startsWith(today) && order.durum !== "iptal" && order.durum !== "iade");
-  const revenue = todayOrders.reduce((sum, order) => sum + order.toplam, 0);
-  const seats = data.seatReservations.filter((reservation) =>
+  const revenue = dashboardMetrics?.ciro ?? todayOrders.reduce((sum, order) => sum + order.toplam, 0);
+  const seats = dashboardMetrics
+    ? dashboardMetrics.seansDoluluk.reduce((sum, session) => sum + session.dolu, 0)
+    : data.seatReservations.filter((reservation) =>
     todaySessionIds.has(reservation.seansId) && reservation.durum === "dolu",
   ).length;
   const capacity = todaySessions.reduce((sum, session) => {
     const hall = data.halls.find((item) => item.id === session.salonId);
     return sum + (hall ? kapasite(hall.harita) : 0);
   }, 0);
-  const occupancy = capacity === 0 ? 0 : dolulukYuzdesi(seats, { satir: 1, sutun: capacity, koridorSutunlari: [], vipSatirlari: [], kullanilamaz: [] });
+  const occupancy = dashboardMetrics
+    ? Math.round(dashboardMetrics.ortalamaDoluluk)
+    : capacity === 0 ? 0 : dolulukYuzdesi(seats, { satir: 1, sutun: capacity, koridorSutunlari: [], vipSatirlari: [], kullanilamaz: [] });
+  const sessionCount = dashboardMetrics?.seansDoluluk.length ?? todaySessions.length;
+  const ticketCount = dashboardMetrics?.bilet ?? todayOrders.reduce((sum, order) => sum + order.biletler.length, 0);
+  const occupancyRows = dashboardMetrics
+    ? dashboardMetrics.seansDoluluk.slice(0, 8).map((session) => ({
+      id: session.seansId,
+      time: session.baslangic.slice(11, 16),
+      percent: Math.round(session.yuzde),
+    }))
+    : todaySessions.slice(0, 8).map((session) => {
+      const hall = data.halls.find((item) => item.id === session.salonId);
+      const filled = data.seatReservations.filter((reservation) => reservation.seansId === session.id && reservation.durum === "dolu").length;
+      return {
+        id: session.id,
+        time: session.baslangic.slice(11, 16),
+        percent: hall ? dolulukYuzdesi(filled, hall.harita) : 0,
+      };
+    });
   const upcomingSessions = [...data.sessions]
     .filter((session) => session.baslangic >= new Date().toISOString().slice(0, 16))
     .sort((a, b) => a.baslangic.localeCompare(b.baslangic))
@@ -47,8 +69,8 @@ export default function Dashboard() {
       <div className="admin-page-heading"><div><p className="admin-eyebrow">BUGÜN · {new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}</p><h1>Genel bakış</h1><p>Sinema operasyonlarının güncel özeti.</p></div><button className="admin-button" type="button" onClick={() => window.print()}>Raporu yazdır</button></div>
       <section className="admin-stat-grid" aria-label="Günlük performans">
         <article className="admin-stat-card"><span>Günlük gelir</span><strong>{currency.format(revenue)}</strong><small>Bilet ve büfe siparişleri</small><span className="admin-stat-card__icon"><AdminIcon name="coins" /></span></article>
-        <article className="admin-stat-card"><span>Doluluk oranı</span><strong>{occupancy}%</strong><small>{seats} / {capacity || 0} koltuk</small><span className="admin-stat-card__icon admin-stat-card__icon--amber"><AdminIcon name="chart" /></span></article>
-        <article className="admin-stat-card"><span>Bugünkü bilet</span><strong>{todayOrders.reduce((sum, order) => sum + order.biletler.length, 0)}</strong><small>{todaySessions.length} seans planlandı</small><span className="admin-stat-card__icon admin-stat-card__icon--blue"><AdminIcon name="ticket" /></span></article>
+        <article className="admin-stat-card"><span>Doluluk oranı</span><strong>{occupancy}%</strong><small>{dashboardMetrics ? `${seats} kayıtlı koltuk` : `${seats} / ${capacity || 0} koltuk`}</small><span className="admin-stat-card__icon admin-stat-card__icon--amber"><AdminIcon name="chart" /></span></article>
+        <article className="admin-stat-card"><span>Bugünkü bilet</span><strong>{ticketCount}</strong><small>{sessionCount} seans planlandı</small><span className="admin-stat-card__icon admin-stat-card__icon--blue"><AdminIcon name="ticket" /></span></article>
         <article className="admin-stat-card"><span>En çok izlenen</span><strong className="admin-stat-card__title">{topFilm}</strong><small>Aktif siparişlere göre</small><span className="admin-stat-card__icon admin-stat-card__icon--purple"><AdminIcon name="star" /></span></article>
       </section>
       <div className="admin-dashboard-grid">
@@ -74,12 +96,7 @@ export default function Dashboard() {
       </div>
       <section className="admin-panel admin-occupancy-panel">
         <div className="admin-section-heading"><div><h2>Seans doluluk özeti</h2><p>Bugünkü seanslara kayıtlı koltukların oranı</p></div><StatusBadge tone={occupancy > 75 ? "success" : "info"} label={`Genel ${occupancy}%`} /></div>
-        <div className="admin-occupancy-bars">{todaySessions.slice(0, 8).map((session) => {
-          const hall = data.halls.find((item) => item.id === session.salonId);
-          const filled = data.seatReservations.filter((reservation) => reservation.seansId === session.id && reservation.durum === "dolu").length;
-          const rate = hall ? dolulukYuzdesi(filled, hall.harita) : 0;
-          return <div className="admin-occupancy-row" key={session.id}><span>{session.baslangic.slice(11, 16)}</span><div className="admin-progress"><i style={{ width: `${rate}%` }} /></div><strong>{rate}%</strong></div>;
-        })}{todaySessions.length === 0 && <p className="admin-empty">Bugün için seans kaydı bulunamadı.</p>}</div>
+        <div className="admin-occupancy-bars">{occupancyRows.map((session) => <div className="admin-occupancy-row" key={session.id}><span>{session.time}</span><div className="admin-progress"><i style={{ width: `${session.percent}%` }} /></div><strong>{session.percent}%</strong></div>)}{occupancyRows.length === 0 && <p className="admin-empty">Bugün için seans kaydı bulunamadı.</p>}</div>
       </section>
     </div>
   );

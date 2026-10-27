@@ -1,22 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import EtkinlikDetay from '../../components/EtkinlikDetay.svelte';
-import { filmler, type Film } from '$lib/data';
 
 export function getStaticPaths() {
-  return filmler.map((film) => ({
-    params: { id: String(film.id) },
-    props: { film },
-  }));
+  return [1, 2, 3, 4, 5, 6].map((id) => ({ params: { id: String(id) } }));
 }
 
-interface Props {
-  film: Film;
-}
-
-const { film } = Astro.props;
+const { id } = Astro.params;
 ---
 
-<Layout title={`${film.baslik} — CineQ`}>
-  <EtkinlikDetay client:load etkinlik={film} lang="tr" />
+<Layout title="Film Detayı — CineQ">
+  <EtkinlikDetay client:load filmId={id} lang="tr" />
 </Layout>

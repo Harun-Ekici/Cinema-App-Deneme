@@ -4,6 +4,7 @@
   import { tl } from "$lib/data";
   import { sepet } from "$lib/sepet.svelte";
   import { biletlerim } from "$lib/biletler.svelte";
+  import { isTauri } from "@tauri-apps/api/core";
   import { destekleniyorMu } from "$lib/native";
   import HataDurumu from "$lib/components/ui/HataDurumu.svelte";
   import type { BiletSonucu, NativeHatasi } from "$lib/types";
@@ -19,6 +20,8 @@
   let satinAlHatasi = $state("");
   let satinAlTamamlandi = $state(false);
   let satinAlSonuclari = $state<BiletSonucu[]>([]);
+  let orderId = $state("");
+  const tauriCheckout = $derived(isTauri());
 
   // Sahte Kart Bilgileri
   let kartSahibi = $state("Harun Ekici");
@@ -51,15 +54,16 @@
 
       const sonuc = await biletlerim.satinAl(sepet.biletler, sepet.bufeKalemleri, indirimMetni);
       if (!sonuc.ok) {
-        satinAlHatasi = biletHatasiMetni(sonuc.hata);
+        satinAlHatasi = sonuc.mesaj ?? biletHatasiMetni(sonuc.hata);
         return;
       }
 
       sepet.temizle();
       satinAlSonuclari = sonuc.sonuclar;
+      orderId = sonuc.orderId;
       satinAlTamamlandi = true;
-    } catch {
-      satinAlHatasi = "Satın alma tamamlanamadı. Lütfen tekrar deneyin.";
+    } catch (reason) {
+      satinAlHatasi = reason instanceof Error ? reason.message : "Satın alma tamamlanamadı.";
     } finally {
       isleniyor = false;
     }
@@ -93,6 +97,7 @@
   {#if satinAlTamamlandi}
     <div class="kart satin-alma-sonucu" role="status">
       <h2>Satın alma tamamlandı</h2>
+      {#if orderId}<p>Sipariş numarası: <strong>{orderId}</strong></p>{/if}
       {#each satinAlSonuclari as sonuc (sonuc.pnrKodu)}
         <p>{sonuc.dogrulamaOzeti}</p>
         <strong>PNR: {sonuc.pnrKodu}</strong>
@@ -112,6 +117,9 @@
       <a href="/" class="kesfet-link">Vizyondaki Filmleri Keşfet →</a>
     </div>
   {:else}
+    {#if !tauriCheckout}
+      <p class="admin-inline-error" role="alert">SQLite üzerinden sipariş vermek için CineQ masaüstü uygulamasını kullanın. Web sürümünde sipariş kaydı oluşturulmaz.</p>
+    {/if}
     <!-- 1. Bilet Kalemleri -->
     {#if sepet.biletler.length > 0}
       <div class="bolum">
@@ -270,7 +278,7 @@
       </div>
 
       {#if destekleniyorMu("bilet_kodu_uret")}
-        <button class="btn odeme-btn" onclick={odemeTamamla} disabled={isleniyor}>
+        <button class="btn odeme-btn" onclick={odemeTamamla} disabled={isleniyor || !tauriCheckout}>
           {#if isleniyor}
             <span>⏳ Güvenli Ödeme İşleniyor...</span>
           {:else}

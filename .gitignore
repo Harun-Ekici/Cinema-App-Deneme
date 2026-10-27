@@ -19,3 +19,5 @@ docs/tasks/**/raw/
 .mcp.json
 .opencode
 .codex
+
+lat.md/.cache/

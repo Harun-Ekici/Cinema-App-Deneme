@@ -1,6 +1,8 @@
-import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { AdminDataProvider, ErrorState, LoadingState, useAdminData } from "./AdminDataContext";
+import { AdminAuthGate } from "./components/AdminAuthGate";
+import { AdminErrorBoundary } from "./components/AdminErrorBoundary";
 import { AppShell } from "./components/AppShell";
 import type { Lang } from "./domain/types";
 import "./styles/tokens.css";
@@ -17,6 +19,7 @@ import Schedules from "./features/Schedules";
 function AdminRoutes() {
   const { loading, error, reload } = useAdminData();
   const [lang, setLang] = useState<Lang>("tr");
+  const location = useLocation();
 
   if (loading) {
     return <AppShell lang={lang} onLangChange={setLang}><LoadingState /></AppShell>;
@@ -27,17 +30,19 @@ function AdminRoutes() {
 
   return (
     <AppShell lang={lang} onLangChange={setLang}>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/filmler" element={<Movies />} />
-        <Route path="/seanslar" element={<Schedules />} />
-        <Route path="/salonlar" element={<Auditoriums />} />
-        <Route path="/bufe" element={<Concessions />} />
-        <Route path="/siparisler" element={<Orders />} />
-        <Route path="/kapi" element={<Gate />} />
-        <Route path="/musteriler" element={<Customers />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AdminErrorBoundary key={location.pathname}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/filmler" element={<Movies />} />
+          <Route path="/seanslar" element={<Schedules />} />
+          <Route path="/salonlar" element={<Auditoriums />} />
+          <Route path="/bufe" element={<Concessions />} />
+          <Route path="/siparisler" element={<Orders />} />
+          <Route path="/kapi" element={<Gate />} />
+          <Route path="/musteriler" element={<Customers />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AdminErrorBoundary>
     </AppShell>
   );
 }
@@ -45,9 +50,11 @@ function AdminRoutes() {
 export default function App() {
   return (
     <HashRouter>
-      <AdminDataProvider>
-        <AdminRoutes />
-      </AdminDataProvider>
+      <AdminAuthGate>
+        <AdminDataProvider>
+          <AdminRoutes />
+        </AdminDataProvider>
+      </AdminAuthGate>
     </HashRouter>
   );
 }

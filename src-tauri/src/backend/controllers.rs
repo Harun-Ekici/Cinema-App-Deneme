@@ -22,18 +22,41 @@ use serde_json::{json, Value};
 
 pub fn auth_register(app: &AppState, name: &str, email: &str, password: &str) -> AppResult<Value> {
     let user = app.db.with(|c| auth::register(c, name, email, password))?;
+    let session_id = new_id();
+    app.db.with(|c| {
+        c.execute("INSERT INTO auth_sessions (id, userId) VALUES (?1, ?2)", params![session_id, user.id])?;
+        Ok(())
+    })?;
     app.set_user(Some(user.id));
+    app.set_session(Some(session_id));
     app.db.with(|c| auth::user_with_access(c, user.id))
 }
 
 pub fn auth_login(app: &AppState, email: &str, password: &str) -> AppResult<Value> {
     let user = app.db.with(|c| auth::attempt(c, email, password))?;
+    let session_id = new_id();
+    app.db.with(|c| {
+        c.execute("INSERT INTO auth_sessions (id, userId) VALUES (?1, ?2)", params![session_id, user.id])?;
+        Ok(())
+    })?;
     app.set_user(Some(user.id));
+    app.set_session(Some(session_id));
     app.db.with(|c| auth::user_with_access(c, user.id))
 }
 
-pub fn auth_logout(app: &AppState) {
+pub fn auth_logout(app: &AppState) -> AppResult<()> {
+    if let Some(session_id) = app.session_id() {
+        app.db.with(|c| {
+            c.execute(
+                &format!("UPDATE auth_sessions SET endedAt = {NOW_SQL} WHERE id = ?1 AND endedAt IS NULL"),
+                [session_id],
+            )?;
+            Ok(())
+        })?;
+    }
     app.set_user(None);
+    app.set_session(None);
+    Ok(())
 }
 
 /// Oturum yoksa `null`.
@@ -42,6 +65,54 @@ pub fn auth_me(app: &AppState) -> AppResult<Value> {
         Some(id) => app.db.with(|c| auth::user_with_access(c, id)),
         None => Ok(Value::Null),
     }
+}
+
+pub fn auth_owner_setup_required(app: &AppState) -> AppResult<bool> {
+    app.db.with(auth::owner_password_setup_required)
+}
+
+pub fn auth_owner_set_initial_password(app: &AppState, password: &str) -> AppResult<Value> {
+    let user = app.db.with_mut(|conn| auth::set_owner_initial_password(conn, password))?;
+    let session_id = new_id();
+    app.db.with(|c| {
+        c.execute("INSERT INTO auth_sessions (id, userId) VALUES (?1, ?2)", params![session_id, user.id])?;
+        Ok(())
+    })?;
+    app.set_user(Some(user.id));
+    app.set_session(Some(session_id));
+    app.db.with(|conn| auth::user_with_access(conn, user.id))
+}
+
+pub fn auth_session_index(app: &AppState) -> AppResult<Vec<Value>> {
+    app.db.with(|c| {
+        authorize(c, app.user(), "ViewAny:User")?;
+        let current = app.session_id();
+        let mut statement = c.prepare(
+            "SELECT s.id, s.userId, u.name, u.email, s.startedAt, s.endedAt
+             FROM auth_sessions s JOIN users u ON u.id = s.userId
+             ORDER BY s.startedAt DESC LIMIT 500",
+        )?;
+        let rows = statement.query_map([], |row| {
+            let id: String = row.get(0)?;
+            let user_id: i64 = row.get(1)?;
+            let name: String = row.get(2)?;
+            let email: String = row.get(3)?;
+            let started_at: String = row.get(4)?;
+            let ended_at: Option<String> = row.get(5)?;
+            let active = ended_at.is_none();
+            Ok(json!({
+                "id": id,
+                "userId": user_id,
+                "name": name,
+                "email": email,
+                "startedAt": started_at,
+                "endedAt": ended_at,
+                "active": active,
+                "current": current.as_deref() == Some(id.as_str()),
+            }))
+        })?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    })
 }
 
 // ─────────────────────── Kaynak denetleyicisi (CRUD) ───────────────────────

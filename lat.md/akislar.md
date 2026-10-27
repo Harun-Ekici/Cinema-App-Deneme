@@ -6,15 +6,19 @@ Kanonik rota envanteri [[docs/mimari-agac.md]], bilet üretimi sözleşmesi [[do
 
 ## Film Keşfi ve Detay
 
-Kullanıcılar örnek filmleri görüntüler ve süzer, film detay rotasını açar; ilgili liste sorgusu korunarak geri dönebilir. Geçersiz kimlikler boş detay sayfası yerine bulunamadı görünümüne yönelir.
+Vitrin [[src/lib/katalog.ts#vitrinFilmleriniYukle]] ile SQLite filmlerini listeler; genel detay rotası her film kimliğini ve ilgili filtreleri koruyarak açar. Geçersiz film kimliği açık hata durumuna geçer.
 
-Rota ve yerelleştirme ayrıntıları [[docs/mimari-agac.md]] ve tamamlanmış görev kaydı [[docs/istemler/14-detay-ekrani.md]] içinde tutulur.
+Seans seçimi aynı katalog kaydındaki gerçek salon haritasını, koridorları, VIP sıraları, kullanılamayan ve dolu/tutulmuş koltukları gösterir; VIP ücreti seans fiyatından hesaplanır. Rotalar [[docs/mimari-agac.md]] içinde tanımlanır.
 
 ## Sepet ve Bilet Kodu
 
-Bilet ve büfe seçimleri aynı sepeti kullanır; toplamlar, desteklenen indirim kodları ve yerel kalıcılık [[src/lib/sepet.svelte.ts]] tarafından yönetilir. Bilet üretimi [[src/lib/native.ts#biletHesapla]] üzerinden tipli başarı veya hata döndürür.
+Bilet ve büfe seçimleri aynı sepette toplanır; seans, koltuk ve tutar bilgileri yerel olarak saklanır.
 
-Tauri ortamında köprü [[src-tauri/src/lib.rs#bilet_hesapla]] komutunu çağırır. Tarayıcıda aynı alanları taşıyan belirlenebilir bir demo sonucu döner; yerel komut hatası hata olarak kalır. Tamamlanan uygulama ve test kanıtı [[docs/istemler/15-rust-komutu.md]] içindedir.
+Sepet hesaplamaları ve indirimler [[src/lib/sepet.svelte.ts]] tarafından yönetilir. Ödeme simülasyonundan sonra [[src/lib/biletler.svelte.ts#Biletlerim#satinAl]] siparişi SQLite'a yazar; yerel bilet geçmişi tutulmaz.
+
+Tauri vitrini film, seans, salon haritası, koltuk doluluğu ve büfe kataloğunu [[src-tauri/src/backend/domain.rs#do_vitrin_katalog]] üzerinden okur. Misafir checkout aynı transaction içinde sipariş, bilet, dolu koltuk ve büfe stok değişikliklerini kaydeder; [[src/lib/biletler.svelte.ts#Biletlerim#yenile]] biletleri SQLite'tan listeler ve seans başlamadan siparişi iptal edebilir. Web checkout siparişi kaydetmez ve Tauri gereksinimini bildirir.
+
+Kapı ekranı değişken salon kodunu, geçerli `HHmm` saatini ve altı alfanümerik karakteri kabul eder; [[src/admin/domain/rules.ts#pnrBicimi]] ile [[src-tauri/src/backend/domain.rs#pnr_gecerli_mi]] biçim kurallarını eşler.
 
 ## Liste Geri Bildirimi
 

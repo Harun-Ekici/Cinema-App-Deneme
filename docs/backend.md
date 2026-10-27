@@ -23,7 +23,8 @@ Rol ve izin düzeni, eğitmenin Laravel projelerindeki `spatie/laravel-permissio
 
 - Dosya: uygulama veri klasörü / `app.sqlite` (Tauri `app_data_dir`). Depoya girmez.
 - Açılışta migration'lar sırayla çalışır; roller, izinler ve başlangıç verisi **veri migration'larıyla** gelir (seeder gerekmez).
-- **İlk kayıt olan kullanıcı `admin` olur.** Sonraki kayıtlar `customer` rolünü alır.
+- Owner hesabı `2026_10_27_000040_seed_owner_account` migration'ıyla eklenir; ilk parola Tauri içinden yalnız bir kez oluşturulur ve kaynakta ya da veritabanı tohumunda düz metin olarak tutulmaz. Uygulama yeniden açıldığında otomatik oturum oluşturulmaz.
+- Boş veritabanında ilk kayıt `admin` olur; owner seed'i bulunan kurulumda normal kayıtlar ilk kullanıcı sayılmaz ve `customer` rolü alır.
 
 ## 3. Tablolar
 
@@ -76,6 +77,8 @@ Rust'taki `snake_case` parametreler JS tarafında `camelCase` yazılır. Aşağ�
 | `auth_login` | email, password | Giriş |
 | `auth_logout` | — | Çıkış |
 | `auth_me` | — | Oturumdaki kullanıcı + roller + izinler (yoksa null) |
+| `auth_owner_setup_required` | — | Seed edilmiş etkin owner hesabının ilk parolayı bekleyip beklemediğini bildirir |
+| `auth_owner_set_initial_password` | password | Seed edilmiş owner için 8–128 karakterli ilk parolayı bir kez belirler ve oturum açar |
 | `user_index` | — | Kullanıcı listesi (`ViewAny:User`) |
 | `user_store` | name, email, role, password? | Kullanıcı oluştur/güncelle + rol ata (`Create:User`) |
 | `user_sync_roles` | userId, roles[] | Rolleri eşitle (`Update:User`) |
@@ -98,6 +101,7 @@ Rust'taki `snake_case` parametreler JS tarafında `camelCase` yazılır. Aşağ�
 | `crud_aggregate` | resource, groupBy, query? | Gruplu sayım (panel grafikleri) |
 | `db_migrate_status` | — | Migration durumu (yalnız admin) |
 | `contact_submit` | name, email, subject?, message, lang? | İletişim formu (oturum gerekmez) |
+| `vitrin_katalog` | — | Müşteri vitrini için yayınlanabilir filmleri, gelecek seansları, salon haritalarını ve dolu/tutulmuş koltukları döndürür; yönetici CRUD izni istemez. |
 
 ### Bu uygulamaya özel
 
@@ -122,6 +126,8 @@ const sayfa = await invoke("crud_index", { resource: "Film", query: { page: 1, p
 // sayfa = { items, total, page, pageSize }
 ```
 
+Admin paneli Tauri'de açılışta `auth_me` ile oturumu doğrular ve film, sinema, salon, sipariş okuma izinlerini ister. İlk kullanıcı kaydı `auth_register` üzerinden yönetici rolü oluşturur; panelde bu kayıt seçeneği yalnız geliştirme derlemesinde gösterilir. Native adaptör film, sinema ve salon listelerini `crud_index`, özet metriklerini `cineq_dashboard` ile okur; film oluşturma/güncelleme `crud_store`/`crud_update`, yeni salon ve koltuk haritası güncellemeleri aynı CRUD komutlarını kullanır. Dashboard bugünün sonucu boşsa tarih filtresiz en güncel metriklere döner. Müşteri vitrini `vitrin_katalog` komutuyla SQLite film, seans, salon haritası ve koltuk doluluğunu okur; bu katalog tarayıcıda mock veriyle taklit edilmez. Tarayıcıda yönetim paneli mock adaptörünü kullanır, sipariş ve diğer prototip koleksiyonları native SQLite'a bağlı değildir. Örnek katalog, salon ve ileri tarihli seans kayıtları `2026_10_27_000030_seed_admin_demo_data.sql` migration'ıyla eklenir.
+
 Hatalar `{ code, message, errors? }` olarak döner. `code`: `unauthenticated` (oturum yok), `forbidden` (izin yok), `not_found`, `validation` (`errors[]` alan bazlı), `conflict`, `db`, `internal`.
 
 Süzgeç anahtarı bir sütun adıysa tam eşleşme, dizi ise `IN`; `<sütun>Min` / `<sütun>Max` aralık verir (yalnız `filters` listesindeki sütunlar).
@@ -145,4 +151,3 @@ Süzgeç anahtarı bir sütun adıysa tam eşleşme, dizi ise `IN`; `<sütun>Min
 - Parolalar Argon2id ile özetlenir; yine de bu bir **eğitim ve geliştirme altyapısıdır**, gerçek kullanıcı verisi için denetlenmiş bir sunucu gerekir.
 - İzin önbelleği yoktur; her denetim veritabanından okunur.
 - Arama SQLite `LIKE` ile yapılır (Türkçe büyük/küçük harf duyarlılığı sınırlıdır).
-

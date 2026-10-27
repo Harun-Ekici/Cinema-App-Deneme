@@ -1,5 +1,6 @@
 import type {
   AdminUser,
+  AdminAuthSession,
   AuditLogEntry,
   BufeKategori,
   BufeMenusu,
@@ -311,6 +312,7 @@ export interface AdminSeedData {
   campaigns: Kampanya[];
   contactMessages: ContactMessage[];
   admins: AdminUser[];
+  authSessions: AdminAuthSession[];
   auditLogs: AuditLogEntry[];
 }
 
@@ -327,5 +329,6 @@ export const seedData: AdminSeedData = {
   campaigns: kampanyalarSeed,
   contactMessages: mesajlarSeed,
   admins: yoneticilerSeed,
+  authSessions: [],
   auditLogs: denetimKayitlariSeed,
 };

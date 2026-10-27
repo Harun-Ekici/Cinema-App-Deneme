@@ -1,10 +1,11 @@
 import { cakisiyorMu } from "../domain/rules";
-import type { Film, Salon, Seans } from "../domain/types";
+import type { Film, Salon, Seans, Sinema } from "../domain/types";
 
 export interface ScheduleGridProps {
   sessions: Seans[];
   halls: Salon[];
   films: Film[];
+  cinemas?: Sinema[];
   onSelectSession?: (session: Seans) => void;
 }
 
@@ -19,7 +20,7 @@ function dayKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-export function ScheduleGrid({ sessions, halls, films, onSelectSession }: ScheduleGridProps) {
+export function ScheduleGrid({ sessions, halls, films, cinemas = [], onSelectSession }: ScheduleGridProps) {
   const weekStart = startOfWeek(new Date());
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(weekStart);
@@ -51,7 +52,10 @@ export function ScheduleGrid({ sessions, halls, films, onSelectSession }: Schedu
         ))}
         {halls.map((hall) => (
           <div className="admin-schedule-row" role="row" key={hall.id}>
-            <div className="admin-schedule-hall" role="rowheader"><strong>{hall.ad}</strong><span>{hall.tip}</span></div>
+            <div className="admin-schedule-hall" role="rowheader">
+              <strong>{cinemas.find((cinema) => cinema.id === hall.sinemaId)?.ad ?? "Sinema"} · {hall.ad}</strong>
+              <span>{cinemas.find((cinema) => cinema.id === hall.sinemaId)?.sehir ?? ""} · {hall.tip}</span>
+            </div>
             {days.map((day) => {
               const key = dayKey(day);
               const dailySessions = sessions.filter((session) =>
@@ -61,16 +65,17 @@ export function ScheduleGrid({ sessions, halls, films, onSelectSession }: Schedu
                 <div className="admin-schedule-cell" role="gridcell" key={key}>
                   {dailySessions.map((session) => {
                     const film = films.find((item) => item.id === session.filmId);
+                    const filmName = film?.ad?.tr?.trim() || "Bilinmeyen Film";
                     return (
                       <button
                         key={session.id}
                         type="button"
                         className={`admin-schedule-event${conflicts.has(session.id) ? " is-conflict" : ""}`}
-                        aria-label={`${film?.ad.tr ?? "Film"}, ${session.baslangic.slice(11, 16)}${conflicts.has(session.id) ? ", çakışma var" : ""}`}
+                        aria-label={`${filmName}, ${session.baslangic.slice(11, 16)}${conflicts.has(session.id) ? ", çakışma var" : ""}`}
                         onClick={() => onSelectSession?.(session)}
                       >
                         <strong>{session.baslangic.slice(11, 16)}</strong>
-                        <span>{film?.ad.tr ?? "Film"}</span>
+                        <span>{filmName}</span>
                         {conflicts.has(session.id) && <em>Çakışma</em>}
                       </button>
                     );

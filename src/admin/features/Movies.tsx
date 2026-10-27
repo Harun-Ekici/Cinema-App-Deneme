@@ -4,7 +4,9 @@ import { FilterBar } from "../components/FilterBar";
 import { StatusBadge } from "../components/StatusBadge";
 import { AdminIcon } from "../components/AdminIcon";
 import { requireAdminData, useAdminData } from "../AdminDataContext";
-import type { Film, FilmDurumu } from "../domain/types";
+import type { Film, FilmDurumu, Tur } from "../domain/types";
+
+const movieGenres: Tur[] = ["Aksiyon", "Dram", "Animasyon", "Bilim Kurgu", "Komedi", "Gerilim", "Belgesel"];
 
 const emptyMovie = (): Film => ({
   id: 0,
@@ -14,13 +16,13 @@ const emptyMovie = (): Film => ({
   yonetmen: "",
   oyuncular: [],
   sureDk: 100,
-  turler: ["Dram"],
+  turler: [],
   yasSiniri: 13,
   durum: "yakinda",
 });
 
 export default function Movies() {
-  const { data, replaceCollection } = useAdminData();
+  const { data, saveFilm } = useAdminData();
   const [statusFilter, setStatusFilter] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [draft, setDraft] = useState<Film>(emptyMovie);
@@ -38,18 +40,26 @@ export default function Movies() {
 
   async function saveMovie(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = draft.ad.tr.trim();
+    const name = draft.ad?.tr?.trim() ?? "";
     if (name.length < 2) {
       setError("Türkçe film adı en az 2 karakter olmalıdır.");
       return;
     }
-    const editing = draft.id !== 0;
-    const movie = { ...draft, id: editing ? draft.id : Math.max(0, ...adminData.films.map((item) => item.id)) + 1, ad: { ...draft.ad, tr: name } };
-    const next = editing
-      ? adminData.films.map((item) => item.id === movie.id ? movie : item)
-      : [movie, ...adminData.films];
+    if (draft.turler.length === 0) {
+      setError("Film türü seçilmelidir.");
+      return;
+    }
+    const normalizedName = name.toLocaleLowerCase("tr");
+    const duplicate = adminData.films.some(
+      (film) => film.id !== draft.id && film.ad.tr.trim().toLocaleLowerCase("tr") === normalizedName,
+    );
+    if (duplicate) {
+      setError("Bu film adı zaten mevcut");
+      return;
+    }
+    const movie = { ...draft, ad: { ...draft.ad, tr: name } };
     try {
-      await replaceCollection("films", next);
+      await saveFilm(movie);
       setFormOpen(false);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Film kaydedilemedi.");
@@ -58,7 +68,7 @@ export default function Movies() {
 
   async function changeStatus(film: Film, status: FilmDurumu) {
     try {
-      await replaceCollection("films", adminData.films.map((item) => item.id === film.id ? { ...item, durum: status } : item));
+      await saveFilm({ ...film, durum: status });
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Film durumu güncellenemedi.");
     }
@@ -90,6 +100,7 @@ export default function Movies() {
             <form className="admin-form" onSubmit={(event) => void saveMovie(event)}>
               <label className="admin-field"><span>Film adı (Türkçe)</span><input required value={draft.ad.tr} onChange={(event) => setDraft({ ...draft, ad: { ...draft.ad, tr: event.target.value } })} /></label>
               <label className="admin-field"><span>Sinopsis</span><textarea rows={3} value={draft.sinopsis} onChange={(event) => setDraft({ ...draft, sinopsis: event.target.value })} /></label>
+              <label className="admin-field"><span>Film türü</span><select required value={draft.turler[0] ?? ""} onChange={(event) => setDraft({ ...draft, turler: event.target.value ? [event.target.value as Tur] : [] })}><option value="">Tür seçin</option>{movieGenres.map((genre) => <option value={genre} key={genre}>{genre}</option>)}</select></label>
               <div className="admin-form-row"><label className="admin-field"><span>Süre (dakika)</span><input type="number" min={1} value={draft.sureDk} onChange={(event) => setDraft({ ...draft, sureDk: Number(event.target.value) })} /></label><label className="admin-field"><span>Yönetmen</span><input value={draft.yonetmen} onChange={(event) => setDraft({ ...draft, yonetmen: event.target.value })} /></label></div>
               <label className="admin-field"><span>Vizyon durumu</span><select value={draft.durum} onChange={(event) => setDraft({ ...draft, durum: event.target.value as FilmDurumu })}><option value="yakinda">Yakında</option><option value="vizyonda">Vizyonda</option><option value="arsiv">Arşiv</option></select></label>
               {error && <p className="admin-inline-error" role="alert">{error}</p>}

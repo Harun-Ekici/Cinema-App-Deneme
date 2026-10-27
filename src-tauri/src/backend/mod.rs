@@ -30,6 +30,13 @@ use std::path::Path;
 pub fn boot(path: &Path) -> error::AppResult<state::AppState> {
     let db = db::Db::open(path)?;
     db.with_mut(|c| migrate::run(c, migrations::ALL).map(|_| ()))?;
+    db.with(|c| {
+        c.execute(
+            &format!("UPDATE auth_sessions SET endedAt = {} WHERE endedAt IS NULL", util::NOW_SQL),
+            [],
+        )?;
+        Ok(())
+    })?;
     Ok(state::AppState::new(db))
 }
 

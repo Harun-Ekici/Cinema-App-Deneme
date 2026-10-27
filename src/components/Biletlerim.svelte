@@ -35,7 +35,7 @@
       if (testDurumu === "yukleniyor") return;
       if (testDurumu === "hata") throw new Error("Geliştirme hata durumu etkin.");
 
-      biletlerim.yenile();
+      await biletlerim.yenile();
       if (biletlerim.hata) throw biletlerim.hata;
 
       listeDurumu = testDurumu === "bos" || biletlerim.liste.length === 0 ? "bos" : "dolu";
@@ -52,6 +52,17 @@
 
   function filmleriKesfet() {
     window.location.href = "/";
+  }
+
+  async function siparisiIptalEt(b: BiletKaydi) {
+    if (!b.siparisId || !window.confirm("Bu seansa ait siparişin tamamı iptal edilsin mi?")) return;
+    try {
+      await biletlerim.siparisIptalEt(b.siparisId);
+      listeDurumu = biletlerim.liste.length === 0 ? "bos" : "dolu";
+    } catch (error) {
+      console.error("Sipariş iptal edilemedi.", error);
+      window.alert(error instanceof Error ? error.message : "Sipariş iptal edilemedi.");
+    }
   }
 
   async function biletiPaylas(b: BiletKaydi) {
@@ -197,6 +208,11 @@
               <span>📋 Paylaş / Kopyala</span>
             {/if}
           </button>
+          {#if b.siparisId && b.durum === "onaylandi"}
+            <button type="button" class="paylas-btn" onclick={() => void siparisiIptalEt(b)}>
+              Rezervasyonu iptal et
+            </button>
+          {/if}
         </div>
       </div>
     </div>

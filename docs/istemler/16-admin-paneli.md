@@ -1,0 +1,76 @@
+# Görev 16 — Yönetim paneli
+
+Bu kayıt, bağımsız yönetim prototipinin istem ve doğrulamalarını izler; tasarım sözleşmesinin tek kaynağı [cineq-react-gorev.md](../../cineq-react-gorev.md) dosyasıdır.
+
+## Araç ve model
+
+Copilot SDK in VS Code; oturumda model adı görünmüyor.
+
+## İstem
+
+> Proje kökündeki `cineq-react-gorev.md` dosyasını tek kaynak kabul et.
+>
+> 1. Ana müşteri arayüzüne dokunmadan tüm paneli `src/admin/` klasörü altına bağımsız bir React + TypeScript prototipi olarak kur.
+> 2. İlk adımda temel mimariyi hazırla:
+>    - `src/admin/styles/tokens.css` (C bölümündeki CSS değişkenleri ve açık/koyu tema)
+>    - `src/admin/domain/types.ts` ve `src/admin/domain/rules.ts` (D ve F bölümlerindeki çekirdek tipler ve kurallar)
+>    - `src/admin/api/seed.ts` ve `src/admin/api/mockAdapter.ts` (D2 bölümündeki seed verileri ve mock adaptör)
+> 3. Başlamadan önce oluşturacağın dosya listesini ve planını kısaca özetle.
+>
+> [ÖNEMLİ KURAL: Kesinlikle ana projeye, mevcut sayfalara ve müşteri arayüzüne dokunmuyorsun. Bu modül `src/admin/` altında tamamen bağımsız bir sayfa/prototip olacak.]
+
+## Plan
+
+- `src/admin/` altında yalnızca istenen beş temel dosyayı oluşturmak ve müşteri arayüzü ile mevcut sayfalara dokunmamak.
+- C, D, D2 ve F sözleşmelerini görev dosyasından uygulamak; prototip sınırını [Lat mimari notunda](../../lat.md/mimari.md) kaydetmek.
+- Plan kullanıcı tarafından onaylandı; görev günlüğü eklemek için ayrıca izin alındı.
+
+## Düzeltmeler
+
+Yok.
+
+## Doğrulama sonucu
+
+- `bun run check` — 0 hata; mevcut `CanliRozet.tsx` React importu için bir ipucu verdi.
+- `bun run build` — başarılı; 54 statik sayfa üretildi.
+- `lat check` — tüm doğrulamalar geçti.
+- Seed sayıları, seans tarih aralığı, PNR ve koltuk verileri; mock adaptörün ilk seed yüklemesi, kalıcı değiştirme ve sıfırlama davranışı çalıştırılarak doğrulandı.
+- `git diff --check` — boşluk/patch hatası bulunmadı.
+
+## Aşama 2 — Yönetim paneli ekranları
+
+Bu aşama ortak operasyon bileşenlerini ve sekiz ekranı bağımsız yönetim rotalarında birleştirir.
+
+### İstem ve kapsam
+
+- E ve G bölümlerine uygun ortak bileşenleri, Dashboard, Movies, Schedules, Auditoriums, Concessions, Orders, Gate ve Customers ekranlarını, `App.tsx` ile `main.tsx` girişlerini kur.
+- Ana müşteri arayüzünü değiştirme. Kullanıcı `react-router-dom` bağımlılığına ve yalnızca yeni `/admin` Astro host rotasına izin verdi.
+- Ortak veri bağlamı, arama/sıralama/sayfalama/seçim, filtreler, durum rozetleri, koltuk editörü, takvim ve PNR doğrulaması uygulandı.
+- Statik Astro dağıtımında alt rotalar için sunucu fallback'i gerekmemesi amacıyla hash tabanlı React Router kullanılır; `/admin/` host sayfası aynı kalır.
+
+### Doğrulama sonucu
+
+- `bun run check` — 0 hata, 0 uyarı; mevcut `CanliRozet.tsx` React importu için bir ipucu verdi.
+- `bun run build` — başarılı; 55 statik sayfa üretildi, yönetim host'u `/admin/index.html` olarak çıktı.
+- Tarayıcıda sekiz ekran rotası açıldı; hash rotasında sayfa yenileme Film ekranını korudu.
+- 390 px görünümde içerik yatay taşmadı; Arapça yönü RTL oldu ve tema geçişi çalıştı.
+- Seed PNR ile kapı doğrulaması ve geçiş onayı denendi; geçiş verisi doğrulama sonrasında başlangıç durumuna döndürüldü.
+- `lat check` — tüm doğrulamalar geçti.
+- `git diff --check` — patch boşluk hatası yok; Git yalnızca LF/CRLF dönüşümü hakkında uyardı.
+
+## Aşama 3 — Yönetim ikonları
+
+### Uygulama
+
+- Ortak SVG simgeleri, bağımlılık eklemeden yönetim paneline özel [AdminIcon](../../src/admin/components/AdminIcon.tsx) bileşeninde toplandı.
+- Sidebar, durum rozetleri ve kartları, tablo arama/sıralama/sayfalama kontrolleri, satır eylemleri, salon/kapı, büfe ve koltuk görselleri aynı ikon setini kullanır.
+- İkon ölçüleri `tokens.css` değişkenlerinden; renk ve hizalamalar `admin.css` içinde mevcut tema ve durum tokenlarından gelir.
+- Müşteri arayüzü dosyaları değiştirilmedi.
+
+### Doğrulama
+
+- `bun run check` — 0 hata; `CanliRozet.tsx` için mevcut bir import ipucu.
+- `bun run build` — başarılı; 55 statik sayfa üretildi.
+- Tarayıcıda yönetim özeti ve Büfe ekranındaki ikonlar görsel olarak kontrol edildi.
+- `lat check` — tüm doğrulamalar geçti.
+- `git diff --check` — patch boşluk hatası bulunmadı.

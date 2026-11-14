@@ -9,7 +9,8 @@
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "screenshots": "node scripts/screenshot.mjs"
   },
   "license": "MIT",
   "dependencies": {
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@tauri-apps/cli": "^2",
+    "playwright": "^1.65.1",
     "svelte": "^5.56.3",
     "svelte-check": "^4.6.0",
     "typescript": "~6.0.3",

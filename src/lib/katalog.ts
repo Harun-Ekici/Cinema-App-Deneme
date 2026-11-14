@@ -142,11 +142,23 @@ interface VitrinKatalogYaniti {
   menuler: unknown[];
 }
 
+function webMockInvoke(): ((command: string, args?: Record<string, unknown>) => Promise<unknown>) | undefined {
+  if (typeof window === "undefined") return undefined;
+  const tauriWindow = window as typeof window & {
+    __TAURI_INTERNALS__?: {
+      invoke?: (command: string, args?: Record<string, unknown>) => Promise<unknown>;
+    };
+  };
+  return tauriWindow.__TAURI_INTERNALS__?.invoke;
+}
+
 async function vitrinKatalogYaniti(): Promise<VitrinKatalogYaniti> {
-  if (!isTauri()) {
+  const mockInvoke = webMockInvoke();
+  if (!isTauri() && !mockInvoke) {
     throw new Error("SQLite vitrin kataloğu yalnızca Tauri uygulamasında kullanılabilir.");
   }
-  const response: unknown = await invoke("vitrin_katalog");
+
+  const response: unknown = isTauri() ? await invoke("vitrin_katalog") : await mockInvoke!("vitrin_katalog");
   if (!isRecord(response) || !Array.isArray(response.films) || !Array.isArray(response.bufe) || !Array.isArray(response.menuler)) {
     throw new Error("SQLite vitrin kataloğu beklenen biçimde değil.");
   }

@@ -1513,13 +1513,26 @@
 
 .admin-scanner__form {
   display: grid;
-  grid-template-columns: minmax(180px, 0.8fr) minmax(240px, 1fr) auto;
+  grid-template-columns: 1fr;
   align-items: end;
   gap: var(--space-3);
 }
 
+.admin-scanner__form .admin-field,
+.admin-scanner__form > button {
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-scanner__form .admin-field {
+  display: grid;
+  min-width: 0;
+}
+
 .admin-scanner__form input {
+  min-width: 0;
   min-height: 48px;
+  width: 100%;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1527,6 +1540,17 @@
 
 .admin-scanner__form > button {
   min-height: 48px;
+}
+
+@media (min-width: 720px) {
+  .admin-scanner__form {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.7fr) auto;
+  }
+
+  .admin-scanner__form > button {
+    width: auto;
+    min-width: 170px;
+  }
 }
 
 .admin-scan-result {
@@ -1593,9 +1617,15 @@
 
 .admin-gate-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.7fr);
+  grid-template-columns: 1fr;
   align-items: start;
   gap: var(--space-4);
+}
+
+@media (min-width: 960px) {
+  .admin-gate-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.7fr);
+  }
 }
 
 .admin-gate-live {

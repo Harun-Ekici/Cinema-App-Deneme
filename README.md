@@ -11,6 +11,7 @@ Vizyondaki filmleri listeleyen, salon koltuk seçimi ve büfe siparişi sağlaya
 ## İçindekiler
 - [Proje Bilgileri](#proje-bilgileri)
 - [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
+- [Test / Demo Yönetici Hesabı](#test--demo-yönetici-hesabı)
 - [Mimari](#mimari)
 - [Lisans](#lisans)
 
@@ -46,3 +47,16 @@ bun run tauri dev
 
 # Derleme (Build)
 bun run build
+```
+
+---
+
+## Test / Demo Yönetici Hesabı
+
+Yerel geliştirme ve test ortamında (`/admin` yönetim paneli ve `/profil` giriş ekranı) kullanılmak üzere yerel SQLite veritabanına (`%APPDATA%\com.cineq.app\app.sqlite`) eklenen test yöneticisi bilgileri:
+
+- **E-posta:** `admin@cineq.test`
+- **Şifre:** `CineQAdmin2026!`
+- **Roller:** `admin`, `owner`
+
+Ayrıntılı notlar ve ilk kurulum bilgisi için bkz. [docs/demo-admin.md](docs/demo-admin.md).
